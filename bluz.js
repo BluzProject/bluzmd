@@ -34,7 +34,9 @@ let tebaklirik = db.data.game.lirik = []
 let tebaktebakan = db.data.game.tebakan = []
 let vote = db.data.others.vote = []
 
-
+        //waktu
+        let dt = moment(Date.now()).tz('Asia/Jakarta').locale('id').format('a')
+        const ucapanWaktu = "Selamat "+dt.charAt(0).toUpperCase() + dt.slice(1)	
 
         // // Menulogo
         // let picaks = [flaming,fluming,flarun,flasmurf]
@@ -127,6 +129,19 @@ module.exports = bluz = async (bluz, m, chatUpdate, store) => {
             console.error(err)
         }
 	    
+                // =====================] FCN WAKTU RAMDHAN HITUNG MUNDUR [========================
+            
+                let tanggal100 = new Date('01 September 2022 00:00:00').getTime();
+                let sekarang10 = new Date().getTime();
+                let selisih1 = tanggal100 - sekarang10;
+        
+                let harinye1 = Math.floor(selisih1 / (1000 * 60 * 60 * 24));
+                let jamnye1 = Math.floor(selisih1 % (1000 * 60 * 60 * 24) / (1000 * 60 * 60));
+                let menitnye1 = Math.floor(selisih1 % (1000 * 60 * 60) / (1000 * 60));
+                let detiknye1 = Math.floor(selisih1 % (1000 * 60) / (1000));
+        
+                // ===================] FCN WAKTU RAMDHAN END HITUNG MUNDUR [=======================
+
         // Public & Self
         if (!bluz.public) {
             if (!m.key.fromMe) return
@@ -457,6 +472,167 @@ Selama ${clockString(new Date - user.afkTime)}`)
         }
 	    
         switch(command) {
+            case 'menu': {
+                //if (isBan) return reply(mess.ban)
+//if (isBanChat) return reply(mess.banChat)
+let template = await generateWAMessageFromContent(m.chat, proto.Message.fromObject({
+         listMessage :{
+             title: `Hay Kak ${pushname}`,
+             description: `Please Choose The Menu
+Tanggal Server : *${moment.tz('Asia/Jakarta').format('DD/MM/YY')}*
+Waktu Server : *${moment.tz('Asia/Jakarta').format('HH:mm:ss')}*\n\n`,
+             buttonText: "Menu",
+             footerText: `${global.botname}`,
+             listType: "SINGLE_SELECT",
+             sections: [{
+                         "title": "क════क   ⊹⊱ SUPPORT ⊰⊹  क════क",
+                         "rows": [
+                            {
+                                "title": "👛 DONATION TO BOT",
+                                "description": "Support BluzBot agar kami tetap semangat membuat fitur baru dan bot tetap aktif (>人<)",
+                                "rowId": `${prefix}donasi`
+                            }, 
+                            {
+                                 "title": "💠 UPGRADE TO PREM",
+                                 "description": "Upgrade ke premium segera untuk mendapatkan fitur yang melimpah (◣_◢)",
+                                 "rowId": `${prefix}sewa`
+                             },
+                             {
+                                "title": "🧾 SEWA BOT",
+                                "description": "Jika kamu ingin memasukan BluzBot ke grup kamu, bisa melakukan sewa dan mendapatkan free premium (⌒_⌒;)",
+                                "rowId": `${prefix}sewa`
+                            }
+                         ]
+                     },
+                     {
+                         "title": "क════क   ⊹⊱ INFO ⊰⊹  क════क",
+                         "rows": [
+                            {
+                                "title": "🔔 BUG REPORT",
+                                "description": "Kepada user BluzBot jika menemukan bug atau error sihlakan laporkan Owner (╯︵╰,)",
+                                "rowId": `${prefix}report`
+                            },
+                            {
+                                "title": "👑 CONTRIBUTOR'S",
+                                "description": "Menampilkan Teman Owner BluzBot yang sudah membantu dalam mengembangkan bot ini >_<",
+                                "rowId": `${prefix}tqtq`
+                            },
+                            {
+                                "title": "⚠️ RULES BOT",
+                                "description": "Menampilkan peraturan dari BluzBot yang harus Kalian Patuhi dan Ikuti ಠ ل͟ ಠ",
+                                "rowId": `${prefix}rules`
+                            },
+                        ]
+                     },
+                     { 
+                        "title": "क════क   ⊹⊱ LIST MENU ⊰⊹  क════क",
+                         "rows": [
+                            {
+                                 "title": "All Menu 🥀",
+                                 "description": "Menampilkan Daftar Semua Fitur!",
+                                 "rowId": `${prefix}allmenu`
+                                },
+                             
+                            {
+                                 "title": "Convert Menu ⚒️",
+                                 "description": "Menampilkan Fitur Convert Menu",
+                                 "rowId": `${prefix}convertmenu`
+                                },
+                            {
+                                 "title": "Download Menu ↘️",
+                                 "description": "Menampilkan Fitur Download Menu",
+                                 "rowId": `${prefix}downloadmenu`
+                                },
+                             
+                            {
+                                "title": "Game Menu 🎮",
+                                "description": "Menampilkan Fitur Game Menu",
+                                "rowId": `${prefix}gamemenu`
+                                },
+                             {
+                                 "title": "Group Menu 🏘️",
+                                 "description": "Menampilkan Fitur Grup Menu",
+                                 "rowId": `${prefix}grupmenu`
+                                 },
+                            {
+                                 "title": "Maker Menu 🌈",
+                                 "description": "Menampilkan Fitur Maker Menu",
+                                 "rowId": `${prefix}indomenu`
+                                },
+                            {
+                                 "title": "Random Menu 🌆",
+                                 "description": "Menampilkan Fitur Random Menu",
+                                 "rowId": `${prefix}randommenu`
+                                },
+                            {
+                                 "title": "Search Menu 🔎",
+                                 "description": "Menampilkan Fitur Search Menu",
+                                 "rowId": `${prefix}searchmenu`
+                                },
+                            {
+                                "title": "Sticker Menu 🃏",
+                                "description": "Menampilkan Fitur Sticker Menu",
+                                "rowId": `${prefix}stickermenu`
+                                },
+                            {
+                                "title": "Sticker Wibu 🃏",
+                                "description": "Menampilkan Sticker Wibu Secara ACak",
+                                "rowId": `${prefix}stickerwibu`
+                                }
+                         ]
+                     },
+                     {
+                         "title": "Chat With Fellow Users 🌝",
+                         "rows": [
+                             {
+                                 "title": "Anonymous Chat Menu 🙎🏻‍♂️",
+                                 "description": "Displays The List Of Anonymous Chat Features",
+                                 "rowId": `${prefix}anonymousmenu`
+                             }
+                         ]
+                     },
+                     {
+                         "title": "Credit ©️",
+                         "rows": [
+                             {
+                                 "title": "Thanks To ❤️",
+                                 "description": "Displays The List Of Credit Of The Bot !!",
+                                 "rowId": `${prefix}tqtq`
+                             }
+                         ]
+                     }
+                 ],
+   listType: 1
+         }
+     }), {})
+     bluz.relayMessage(m.chat, template.message, { messageId: template.key.id })
+     }
+     break
+            case 'help':{
+                const more = String.fromCharCode(8206)
+                const readmore = more.repeat(4001)
+                //var unicorn = await getBuffer('https://images.wallpaperscraft.com/image/single/deer_forest_night_130294_1600x900.jpg')
+                var unicorn = fs.readFileSync('./bluzmedia/image/kuda.jpg')
+                await bluz.send5ButLoc(from,
+`━【 ${global.botname} 】━
+            
+_*${ucapanWaktu} ${pushname !== undefined ? pushname : 'Kak'}*_
+「𝗕𝗢𝗧 𝗜𝗡𝗙𝗢」
+
+➤ Nama : ${pushname}
+➤ Nomor : ${m.sender.split("@")[0]}
+➤ Prefix : ( ${prefix} )
+➤ Tanggal Server : ${moment.tz('Asia/Jakarta').format('DD/MM/YY')}
+➤ Waktu Server : ${moment.tz('Asia/Jakarta').format('HH:mm:ss')}
+➤ Total Pengguna : 
+➤ Runtime : ${runtime(process.uptime())}
+
+《 ${harinye} 》
+*${harinye1} Hari*, *${jamnye1} Jam*, *${menitnye1} Menit*, *${detiknye1} Detik*
+` + '' + ' ', `${botname}`,unicorn, [{"urlButton": {"displayText": "📍 GropBot","url": `https://chat.whatsapp.com/D8JYK5tBRmBIfkqXD1W9ly`}},{"urlButton": {"displayText": "🔖 Informasi","url": `https://s.id/bluzbot`}},{"quickReplyButton": {"displayText": "📑 Menu","id": 'menu'}},
+{"quickReplyButton": {"displayText": "👛 Donasi","id": 'donasi'}},{"quickReplyButton": {"displayText": "🗳 Bug Report","id": 'report'}}] )
+                }
+    break
 	    case 'afk': {
                 let user = global.db.data.users[m.sender]
                 user.afkTime = + new Date
@@ -569,43 +745,23 @@ Silahkan @${m.mentionedJid[0].split`@`[0]} untuk ketik terima/tolak`
                 }
             }
             break
+            case 'report': {
+                m.reply('#report min ignya error')
+                //if (isBan) return reply(mess.ban)	 			
+                //if (isBanChat) return reply(mess.banChat)
+                if (!args.join(" ")) return m.reply(`Example : \n- ${prefix + command} min ytmp4nya error\n- ${prefix + command} hey dev this user is spamming`)
+                teks = `*| REPORT |*`
+                teks1 = `\n\nNumber : @${m.sender.split("@")[0]}\nReport : ${args.join(" ")}`
+                teks2 = `\n\nSuccessfully sent to owner`
+                teks3 = `\n\nuntuk membalas bug report kamu cukup ketik #pesanbug 628|nanti kita fix ignya`
+                for (let i of owner) {
+                bluz.sendMessage(i + "@s.whatsapp.net", {text: teks + teks1 + teks3, mentions:[m.sender]}, {quoted:m})
+                }
+                bluz.sendMessage(m.chat, {text: teks + teks2 + teks1, mentions:[m.sender]}, {quoted:m})
+             }
+             break
             //[================================< CASE FUN >==========================]
-            case 'halah': case 'hilih': case 'huluh': case 'heleh': case 'holoh':
-                if (!m.quoted && !text) throw `Kirim/reply text dengan caption ${prefix + command}`
-                ter = command[1].toLowerCase()
-                tex = m.quoted ? m.quoted.text ? m.quoted.text : q ? q : m.text : q ? q : m.text
-                m.reply(tex.replace(/[aiueo]/g, ter).replace(/[AIUEO]/g, ter.toUpperCase()))
-                break
-                case 'jodohku': {
-                    if (!m.isGroup) throw mess.group
-                    let member = participants.map(u => u.id)
-                    let me = m.sender
-                    let jodoh = member[Math.floor(Math.random() * member.length)]
-                    let jawab = `👫Jodoh mu adalah
-        
-        @${me.split('@')[0]} ❤️ @${jodoh.split('@')[0]}`
-                    let ments = [me, jodoh]
-                    let buttons = [
-                                { buttonId: 'jodohku', buttonText: { displayText: 'Jodohku' }, type: 1 }
-                            ]
-                            await bluz.sendButtonText(m.chat, buttons, jawab, bluz.user.name, m, {mentions: ments})
-                    }
-                    break
-                    case 'jadian': {
-                    if (!m.isGroup) throw mess.group
-                    let member = participants.map(u => u.id)
-                    let orang = member[Math.floor(Math.random() * member.length)]
-                    let jodoh = member[Math.floor(Math.random() * member.length)]
-                    let jawab = `Ciee yang Jadian💖 Jangan lupa pajak jadiannya🐤
-        
-        @${orang.split('@')[0]} ❤️ @${jodoh.split('@')[0]}`
-                    let menst = [orang, jodoh]
-                    let buttons = [
-                                { buttonId: 'jadian', buttonText: { displayText: 'Jodohku' }, type: 1 }
-                            ]
-                            await bluz.sendButtonText(m.chat, buttons, jawab, bluz.user.name, m, {mentions: menst})
-                    }
-                    break
+            
             //[================================< CASE GAME >==========================]
 	    case 'family100': {
                 if ('family100'+m.chat in _family100) {
@@ -2785,46 +2941,46 @@ let capt = `⭔ Title: ${judul}
                 }
             }
             break
-//     case 'allmenu':
-// var unicorn = await getBuffer(picak+'AllMenu')
-// await bluz.send5ButLoc(from, `` + '' + lang.allmenu(botname, pushname, ucapanWaktu, prefix, runtime), `BluzBot © Informasi s.id/bluzbot`,unicorn, [{"urlButton": {"displayText": "📍 GropBot","url": `https://chat.whatsapp.com/D8JYK5tBRmBIfkqXD1W9ly`}},{"urlButton": {"displayText": "🔖 Informasi","url": `https://s.id/bluzbot`}},{"quickReplyButton": {"displayText": "📑 Menu","id": 'menu'}},
-// {"quickReplyButton": {"displayText": "⚠️ Rules","id": 'rules'}},{"quickReplyButton": {"displayText": "🗳 Bug Report","id": 'report'}}] )
-// break
-// case 'convertmenu':
-// var unicorn = await getBuffer(picak+'Convert Menu')
-// await bluz.send5ButLoc(from, `` + '' + lang.convertmenu(prefix), `BluzBot © Informasi s.id/bluzbot`,unicorn, [{"urlButton": {"displayText": "📍 GropBot","url": `https://chat.whatsapp.com/D8JYK5tBRmBIfkqXD1W9ly`}},{"urlButton": {"displayText": "🔖 Informasi","url": `https://s.id/bluzbot`}},{"quickReplyButton": {"displayText": "📑 Menu","id": 'menu'}},
-// {"quickReplyButton": {"displayText": "⚠️ Rules","id": 'rules'}},{"quickReplyButton": {"displayText": "🗳 Bug Report","id": 'report'}}] )
-// break
-// case 'downloadmenu':
-// var unicorn = await getBuffer(picak+'Download Menu')
-// await bluz.send5ButLoc(from, `` + '' + lang.downloadmenu(prefix), `BluzBot © Informasi s.id/bluzbot`,unicorn, [{"urlButton": {"displayText": "📍 GropBot","url": `https://chat.whatsapp.com/D8JYK5tBRmBIfkqXD1W9ly`}},{"urlButton": {"displayText": "🔖 Informasi","url": `https://s.id/bluzbot`}},{"quickReplyButton": {"displayText": "📑 Menu","id": 'menu'}},
-// {"quickReplyButton": {"displayText": "⚠️ Rules","id": 'rules'}},{"quickReplyButton": {"displayText": "🗳 Bug Report","id": 'report'}}] )
-// break
-// case 'grupmenu':
-// var unicorn = await getBuffer(picak+'Grup Menu')
-// await bluz.send5ButLoc(from, `` + '' + lang.grupmenu(prefix), `BluzBot © Informasi s.id/bluzbot`,unicorn, [{"urlButton": {"displayText": "📍 GropBot","url": `https://chat.whatsapp.com/D8JYK5tBRmBIfkqXD1W9ly`}},{"urlButton": {"displayText": "🔖 Informasi","url": `https://s.id/bluzbot`}},{"quickReplyButton": {"displayText": "📑 Menu","id": 'menu'}},
-// {"quickReplyButton": {"displayText": "⚠️ Rules","id": 'rules'}},{"quickReplyButton": {"displayText": "🗳 Bug Report","id": 'report'}}] )
-// break
-// case 'randommenu':
-// var unicorn = await getBuffer(picak+'Random Menu')
-// await bluz.send5ButLoc(from, `` + '' + lang.randommenu(prefix), `BluzBot © Informasi s.id/bluzbot`,unicorn, [{"urlButton": {"displayText": "📍 GropBot","url": `https://chat.whatsapp.com/D8JYK5tBRmBIfkqXD1W9ly`}},{"urlButton": {"displayText": "🔖 Informasi","url": `https://s.id/bluzbot`}},{"quickReplyButton": {"displayText": "📑 Menu","id": 'menu'}},
-// {"quickReplyButton": {"displayText": "⚠️ Rules","id": 'rules'}},{"quickReplyButton": {"displayText": "🗳 Bug Report","id": 'report'}}] )
-// break
-// case 'searchmmenu':
-// var unicorn = await getBuffer(picak+'Search Menu')
-// await bluz.send5ButLoc(from, `` + '' + lang.searchmenu(prefix), `BluzBot © Informasi s.id/bluzbot`,unicorn, [{"urlButton": {"displayText": "📍 GropBot","url": `https://chat.whatsapp.com/D8JYK5tBRmBIfkqXD1W9ly`}},{"urlButton": {"displayText": "🔖 Informasi","url": `https://s.id/bluzbot`}},{"quickReplyButton": {"displayText": "📑 Menu","id": 'menu'}},
-// {"quickReplyButton": {"displayText": "⚠️ Rules","id": 'rules'}},{"quickReplyButton": {"displayText": "🗳 Bug Report","id": 'report'}}] )
-// break
-// case 'stickermenu':
-// var unicorn = await getBuffer(picak+'Sticker Menu')
-// await bluz.send5ButLoc(from, `` + '' + lang.stickermenu(prefix), `BluzBot © Informasi s.id/bluzbot`,unicorn, [{"urlButton": {"displayText": "📍 GropBot","url": `https://chat.whatsapp.com/D8JYK5tBRmBIfkqXD1W9ly`}},{"urlButton": {"displayText": "🔖 Informasi","url": `https://s.id/bluzbot`}},{"quickReplyButton": {"displayText": "📑 Menu","id": 'menu'}},
-// {"quickReplyButton": {"displayText": "⚠️ Rules","id": 'rules'}},{"quickReplyButton": {"displayText": "🗳 Bug Report","id": 'report'}}] )
-// break
-// case 'stickerwibu':
-// var unicorn = await getBuffer(picak+'Sticker Wibu')
-// await bluz.send5ButLoc(from, `` + '' + lang.stickerwibu(prefix), `BluzBot © Informasi s.id/bluzbot`,unicorn, [{"urlButton": {"displayText": "📍 GropBot","url": `https://chat.whatsapp.com/D8JYK5tBRmBIfkqXD1W9ly`}},{"urlButton": {"displayText": "🔖 Informasi","url": `https://s.id/bluzbot`}},{"quickReplyButton": {"displayText": "📑 Menu","id": 'menu'}},
-// {"quickReplyButton": {"displayText": "⚠️ Rules","id": 'rules'}},{"quickReplyButton": {"displayText": "🗳 Bug Report","id": 'report'}}] )
-// break
+    case 'allmenu':
+var unicorn = await getBuffer(`https://textpro.me/images/user_image/2022/08/63005beb90022.jpg`)
+await bluz.send5ButLoc(from, `` + '' + lang.allmenu(botname, pushname, ucapanWaktu, prefix, runtime), `BluzBot © Informasi s.id/bluzbot`,unicorn, [{"urlButton": {"displayText": "📍 GropBot","url": `https://chat.whatsapp.com/D8JYK5tBRmBIfkqXD1W9ly`}},{"urlButton": {"displayText": "🔖 Informasi","url": `https://s.id/bluzbot`}},{"quickReplyButton": {"displayText": "📑 Menu","id": 'menu'}},
+{"quickReplyButton": {"displayText": "⚠️ Rules","id": 'rules'}},{"quickReplyButton": {"displayText": "🗳 Bug Report","id": 'report'}}] )
+break
+case 'convertmenu':
+var unicorn = await getBuffer(`https://textpro.me/images/user_image/2022/08/63005bfe6a2ba.jpg`)
+await bluz.send5ButLoc(from, `` + '' + lang.convertmenu(prefix), `BluzBot © Informasi s.id/bluzbot`,unicorn, [{"urlButton": {"displayText": "📍 GropBot","url": `https://chat.whatsapp.com/D8JYK5tBRmBIfkqXD1W9ly`}},{"urlButton": {"displayText": "🔖 Informasi","url": `https://s.id/bluzbot`}},{"quickReplyButton": {"displayText": "📑 Menu","id": 'menu'}},
+{"quickReplyButton": {"displayText": "⚠️ Rules","id": 'rules'}},{"quickReplyButton": {"displayText": "🗳 Bug Report","id": 'report'}}] )
+break
+case 'downloadmenu':
+var unicorn = await getBuffer(`https://textpro.me/images/user_image/2022/08/63005e2726dd0.jpg`)
+await bluz.send5ButLoc(from, `` + '' + lang.downloadmenu(prefix), `BluzBot © Informasi s.id/bluzbot`,unicorn, [{"urlButton": {"displayText": "📍 GropBot","url": `https://chat.whatsapp.com/D8JYK5tBRmBIfkqXD1W9ly`}},{"urlButton": {"displayText": "🔖 Informasi","url": `https://s.id/bluzbot`}},{"quickReplyButton": {"displayText": "📑 Menu","id": 'menu'}},
+{"quickReplyButton": {"displayText": "⚠️ Rules","id": 'rules'}},{"quickReplyButton": {"displayText": "🗳 Bug Report","id": 'report'}}] )
+break
+case 'grupmenu':
+var unicorn = await getBuffer(`https://textpro.me/images/user_image/2022/08/63005cd6ce535.jpg`)
+await bluz.send5ButLoc(from, `` + '' + lang.grupmenu(prefix), `BluzBot © Informasi s.id/bluzbot`,unicorn, [{"urlButton": {"displayText": "📍 GropBot","url": `https://chat.whatsapp.com/D8JYK5tBRmBIfkqXD1W9ly`}},{"urlButton": {"displayText": "🔖 Informasi","url": `https://s.id/bluzbot`}},{"quickReplyButton": {"displayText": "📑 Menu","id": 'menu'}},
+{"quickReplyButton": {"displayText": "⚠️ Rules","id": 'rules'}},{"quickReplyButton": {"displayText": "🗳 Bug Report","id": 'report'}}] )
+break
+case 'randommenu':
+var unicorn = await getBuffer(`https://textpro.me/images/user_image/2022/08/63005eebd571b.jpg`)
+await bluz.send5ButLoc(from, `` + '' + lang.randommenu(prefix), `BluzBot © Informasi s.id/bluzbot`,unicorn, [{"urlButton": {"displayText": "📍 GropBot","url": `https://chat.whatsapp.com/D8JYK5tBRmBIfkqXD1W9ly`}},{"urlButton": {"displayText": "🔖 Informasi","url": `https://s.id/bluzbot`}},{"quickReplyButton": {"displayText": "📑 Menu","id": 'menu'}},
+{"quickReplyButton": {"displayText": "⚠️ Rules","id": 'rules'}},{"quickReplyButton": {"displayText": "🗳 Bug Report","id": 'report'}}] )
+break
+case 'searchmenu':
+var unicorn = await getBuffer(`https://textpro.me/images/user_image/2022/08/63005de92eab1.jpg`)
+await bluz.send5ButLoc(from, `` + '' + lang.searchmenu(prefix), `BluzBot © Informasi s.id/bluzbot`,unicorn, [{"urlButton": {"displayText": "📍 GropBot","url": `https://chat.whatsapp.com/D8JYK5tBRmBIfkqXD1W9ly`}},{"urlButton": {"displayText": "🔖 Informasi","url": `https://s.id/bluzbot`}},{"quickReplyButton": {"displayText": "📑 Menu","id": 'menu'}},
+{"quickReplyButton": {"displayText": "⚠️ Rules","id": 'rules'}},{"quickReplyButton": {"displayText": "🗳 Bug Report","id": 'report'}}] )
+break
+case 'stickermenu':
+var unicorn = await getBuffer(`https://textpro.me/images/user_image/2022/08/63005efe5dafe.jpg`)
+await bluz.send5ButLoc(from, `` + '' + lang.stickermenu(prefix), `BluzBot © Informasi s.id/bluzbot`,unicorn, [{"urlButton": {"displayText": "📍 GropBot","url": `https://chat.whatsapp.com/D8JYK5tBRmBIfkqXD1W9ly`}},{"urlButton": {"displayText": "🔖 Informasi","url": `https://s.id/bluzbot`}},{"quickReplyButton": {"displayText": "📑 Menu","id": 'menu'}},
+{"quickReplyButton": {"displayText": "⚠️ Rules","id": 'rules'}},{"quickReplyButton": {"displayText": "🗳 Bug Report","id": 'report'}}] )
+break
+case 'stickerwibu':
+var unicorn = await getBuffer(`https://textpro.me/images/user_image/2022/08/63005f76023ce.jpg`)
+await bluz.send5ButLoc(from, `` + '' + lang.stickerwibu(prefix), `BluzBot © Informasi s.id/bluzbot`,unicorn, [{"urlButton": {"displayText": "📍 GropBot","url": `https://chat.whatsapp.com/D8JYK5tBRmBIfkqXD1W9ly`}},{"urlButton": {"displayText": "🔖 Informasi","url": `https://s.id/bluzbot`}},{"quickReplyButton": {"displayText": "📑 Menu","id": 'menu'}},
+{"quickReplyButton": {"displayText": "⚠️ Rules","id": 'rules'}},{"quickReplyButton": {"displayText": "🗳 Bug Report","id": 'report'}}] )
+break
 //RULES
 case 'rules':
 var unicorn = await getBuffer('https://images.wallpaperscraft.com/image/single/radiation_sign_warning_192115_1600x900.jpg')
@@ -2834,7 +2990,7 @@ break
 //DONASI
 case 'donasi':
 var unicorn = await getBuffer('https://cdn.pixabay.com/photo/2014/06/04/16/41/thank-you-362164_960_720.jpg')
-await bluz.send5ButLoc(from, `` + '' + lang.donasi(pushname, ownernomer), `BluzBot © Informasi s.id/bluzbot`,unicorn, [{"urlButton": {"displayText": "GropBot 📍","url": `https://chat.whatsapp.com/D8JYK5tBRmBIfkqXD1W9ly`}},{"urlButton": {"displayText": "Donasi 🔖","url": `https://saweria.co/ceria`}},{"quickReplyButton": {"displayText": "📑 Menu","id": 'menu'}},
+await bluz.send5ButLoc(from, `` + '' + lang.donasi(pushname, owner), `BluzBot © Informasi s.id/bluzbot`,unicorn, [{"urlButton": {"displayText": "GropBot 📍","url": `https://chat.whatsapp.com/D8JYK5tBRmBIfkqXD1W9ly`}},{"urlButton": {"displayText": "Donasi 🔖","url": `https://saweria.co/ceria`}},{"quickReplyButton": {"displayText": "📑 Menu","id": 'menu'}},
 {"quickReplyButton": {"displayText": "🧾 Sewa","id": 'sewa'}},{"quickReplyButton": {"displayText": "👤 Administrasi","id": 'owner'}}] )
 break
 //SEWA

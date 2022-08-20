@@ -367,7 +367,7 @@ Hayy kakak ${pushname} 🥰
 `}
 
 // Donasi
-exports.donasi = (pushname, ownernomer) => {
+exports.donasi = (pushname, owner) => {
 	return`
 ━【 *DONATE* 】━
 (っ◔◡◔)っ ♥ Selamat Datang kak ♥
@@ -378,8 +378,8 @@ Berapapun donasi kalian akan sangat berarti 🥹
 Terima Kasih
 《 *https://saweria.co/ceria* 》
 
-*_Contact person Owner_* :
-wa.me/${ownernomer}
+*_Contact person Administrasi_* :
+wa.me/${owner}
 `}
 
 exports.sewa = (pushname) => {return`
