@@ -20,9 +20,12 @@ global.APIKeys = {
 // Other
 global.owner = ['6289696090800']
 global.premium = ['6289696090800']
+global.botname = 'Bluz-Bot'
+global.harinye = 'Hari Polisi Wanita (POLWAN)'
 global.packname = 'BluzBot'
 global.author = 'WhatsApp Bot'
 global.sessionName = 'bluzqr'
+global,lolkey = '@nc0kb4j1n64n'
 global.prefa = ['','!','.','🐦','🐤','🗿']
 global.sp = '⭔'
 global.mess = {
@@ -38,7 +41,7 @@ global.mess = {
 }
 global.limitawal = {
     premium: "Infinity",
-    free: 100
+    free: 25
 }
 global.thumb = fs.readFileSync('./lib/hisoka.jpg')
 global.visoka = { url: 'https://telegra.ph/file/15209657f9d4f59c7ca1e.mp4' }
