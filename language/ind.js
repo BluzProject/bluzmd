@@ -50,6 +50,14 @@ _*${ucapanWaktu} ${pushname !== undefined ? pushname : 'Kak'}*_
     ${readmore}
 
 ╔════क   ⊹⊱✫⊰⊹  क════क
+╠═══✪〘 ANONYMOUS MENU 〙
+║
+╠➤ ${prefix}start
+╠➤ ${prefix}next
+╠➤ ${prefix}keluar
+╠➤ ${prefix}sendkontak
+╠➤ ${prefix}menfess dari|628xxx|Pesan
+║
 ╠═══✪〘 CONVERT MENU 〙
 ║
 ╠➤ ${prefix}tomp3 [reply video]
@@ -72,12 +80,13 @@ _*${ucapanWaktu} ${pushname !== undefined ? pushname : 'Kak'}*_
 ╠➤ ${prefix}tt [link tiktok]
 ╠➤ ${prefix}tiktok [link tiktok]
 ╠➤ ${prefix}ttnowm [link tiktok]
-╠➤ ${prefix}tiktok audio [link tiktok]
+╠➤ ${prefix}ttmp3 [link tiktok]
 ╠➤ [link tiktok]
 ║
 ╠═══✪〘 GAME MENU 〙
 ║
 ╠➤ ${prefix}family100
+╠➤ ${prefix}math
 ╠➤ ${prefix}suit [tag]
 ╠➤ ${prefix}ttc
 ╠➤ ${prefix}tebak gambar
@@ -93,16 +102,25 @@ _*${ucapanWaktu} ${pushname !== undefined ? pushname : 'Kak'}*_
 ╠➤ ${prefix}kick 6289696090800
 ╠➤ ${prefix}afk [tidur]
 ╠➤ ${prefix}antilink [on/off]
+╠➤ ${prefix}demote [tag]
+╠➤ ${prefix}promote [tag]
 ╠➤ ${prefix}editinfo [open/close]
 ╠➤ ${prefix}grup [open/close]
 ╠➤ ${prefix}hidetag
 ╠➤ ${prefix}tagall
+╠➤ ${prefix}totag [reply msg]
+╠➤ ${prefix}setname [text]
+╠➤ ${prefix}setdesc [text]
+╠➤ ${prefix}setppgc [reply img]
 ║
 ╠═══✪〘 RANDOM MENU 〙
 ║
+╠➤ ${prefix}addmsg [reply pesan]
+╠➤ ${prefix}delmsg [reply pesan]
+╠➤ ${prefix}getmsg
+╠➤ ${prefix}listmsg
 ╠➤ ${prefix}ppcouple
 ╠➤ ${prefix}kopi
-╠➤ ${prefix}
 ╠➤ ${prefix}
 ╠➤ ${prefix}
 ╠➤ ${prefix}quotesanime
@@ -112,6 +130,9 @@ _*${ucapanWaktu} ${pushname !== undefined ? pushname : 'Kak'}*_
 ╠➤ ${prefix}google [gunung]
 ╠➤ ${prefix}googleimage [kucing]
 ╠➤ ${prefix}pinterest [rumah]
+╠➤ ${prefix}ssweb [link]
+╠➤ ${prefix}sshp [link]
+╠➤ ${prefix}sstablet [link]
 ╠➤ ${prefix}styletext [Hallo]
 ╠➤ ${prefix}wikimedia [pohon]
 ╠➤ ${prefix}yts [pesawat kertas]
@@ -166,13 +187,17 @@ _*${ucapanWaktu} ${pushname !== undefined ? pushname : 'Kak'}*_
 ║
 ╠═══✪〘 OWNER MENU 〙
 ║
-╠➤ ${prefix}add 6289696090800
-╠➤ ${prefix}kick 6289696090800
-╠➤ ${prefix}block 6289696090800
-╠➤ ${prefix}unblock 6289696090800
-╠➤ ${prefix}getcase neon
-╠➤ ${prefix}join
-╠➤ ${prefix}pesanbug 62812345678|Hallo
+╠➤ ${prefix}antiviewonce on/off
+╠➤ ${prefix}block
+╠➤ ${prefix}unblock
+╠➤ ${prefix}pesanbug 628|Nanti Kita Fix
+╠➤ ${prefix}setcmd [reply pesan] allmenu
+╠➤ ${prefix}delcmd [reply pesan]
+╠➤ ${prefix}listcmd
+╠➤ ${prefix}lockcmd
+╠➤ ${prefix}setexif BluzBot|WhatsApp Sticker
+╠➤ ${prefix}setppbot [image]
+╠➤ ${prefix}speedtest
 ║
 ╚════क   ⊹⊱✫⊰⊹  क════क
 `
@@ -225,6 +250,7 @@ exports.gamemenu = (prefix) => {return`
 ╠═══✪〘 GAME MENU 〙
 ║
 ╠➤ ${prefix}family100
+╠➤ ${prefix}math
 ╠➤ ${prefix}suit [tag]
 ╠➤ ${prefix}ttc
 ╠➤ ${prefix}tebak gambar
@@ -245,10 +271,16 @@ exports.grupmenu = (prefix) => {return`
 ╠➤ ${prefix}kick 6289696090800
 ╠➤ ${prefix}afk [tidur]
 ╠➤ ${prefix}antilink [on/off]
+╠➤ ${prefix}demote [tag]
+╠➤ ${prefix}promote [tag]
 ╠➤ ${prefix}editinfo [open/close]
 ╠➤ ${prefix}grup [open/close]
 ╠➤ ${prefix}hidetag
 ╠➤ ${prefix}tagall
+╠➤ ${prefix}totag [reply msg]
+╠➤ ${prefix}setname [text]
+╠➤ ${prefix}setdesc [text]
+╠➤ ${prefix}setppgc [reply img]
 ║
 ╚════क   ⊹⊱✫⊰⊹  क════क
 `}
@@ -257,12 +289,15 @@ exports.randommenu = (prefix) => {return`
 ╔════क   ⊹⊱✫⊰⊹  क════क
 ╠═══✪〘 RANDOM MENU 〙
 ║
-╠➤♾️ ppcouple
-╠➤♾️ kopi
+╠➤ ${prefix}addmsg [reply pesan]
+╠➤ ${prefix}delmsh [reply pesan]
+╠➤ ${prefix}getmsg
+╠➤ ${prefix}listmsg
+╠➤ ${prefix}ppcouple
+╠➤ ${prefix}kopi
 ╠➤ ${prefix}
 ╠➤ ${prefix}
-╠➤ ${prefix}
-╠➤♾️ quotesanime
+╠➤ ${prefix}quotesanime
 ║
 ╚════क   ⊹⊱✫⊰⊹  क════क
 `}
@@ -274,6 +309,9 @@ exports.searchmenu = (prefix) => {return`
 ╠➤ ${prefix}google [gunung]
 ╠➤ ${prefix}googleimage [kucing]
 ╠➤ ${prefix}pinterest [rumah]
+╠➤ ${prefix}ssweb [link]
+╠➤ ${prefix}sshp [link]
+╠➤ ${prefix}sstablet [link]
 ╠➤ ${prefix}styletext [Hallo]
 ╠➤ ${prefix}wikimedia [pohon]
 ╠➤ ${prefix}yts [pesawat kertas]
@@ -334,6 +372,43 @@ exports.stickerwibu = (prefix) => {return`
 ║
 ╚════क   ⊹⊱✫⊰⊹  क════क
 `}
+
+exports.ownermenu = (prefix) => {
+	return`
+╔════क   ⊹⊱✫⊰⊹  क════क
+╠═══✪〘 OWNER MENU 〙
+║
+╠➤ ${prefix}antiviewonce on/off
+╠➤ ${prefix}block
+╠➤ ${prefix}unblock
+╠➤ ${prefix}pesanbug 628|Nanti Kita Fix
+╠➤ ${prefix}setcmd [reply pesan] allmenu
+╠➤ ${prefix}delcmd [reply pesan]
+╠➤ ${prefix}listcmd
+╠➤ ${prefix}lockcmd
+╠➤ ${prefix}setexif BluzBot|WhatsApp Sticker
+╠➤ ${prefix}setppbot [image]
+╠➤ ${prefix}speedtest
+║
+╚════क   ⊹⊱✫⊰⊹  क════क
+`
+}
+
+exports.anonymousmenu = (prefix) => {
+	return`
+╔════क   ⊹⊱✫⊰⊹  क════क
+╠═══✪〘 ANONYMOUS MENU 〙
+║
+╠➤ ${prefix}start
+╠➤ ${prefix}next
+╠➤ ${prefix}keluar
+╠➤ ${prefix}sendkontak
+╠➤ ${prefix}menfess dari|628xxx|Pesan
+║
+╚════क   ⊹⊱✫⊰⊹  क════क
+`
+}
+
 //RULES
 exports.rules = (pushname) => {return`
 क══क ⊹⊱ 𝓡𝓤𝓛𝓔𝓢  & 𝓕𝓐𝓠 ⊰⊹ क══क
@@ -841,18 +916,6 @@ exports.databasemenu = (prefix) => {
 `
 }
 
-exports.anonymousmenu = (prefix) => {
-	return`
-┌── 「 *Anonymous Menu* 」
-├ ${prefix}anonymous
-├ ${prefix}start
-├ ${prefix}next
-├ ${prefix}keluar
-├ ${prefix}sendkontak
-└───────
-`
-}
-
 exports.islamicmenu = (prefix) => {
 	return`
 ┌── 「 *Islamic Menu* 」
@@ -879,23 +942,6 @@ exports.voicechargermenu = (prefix) => {
 ├ ${prefix}robot
 ├ ${prefix}slow
 ├ ${prefix}tupai
-└───────
-`
-}
-
-exports.ownermenu = (prefix) => {
-	return`
-┌── 「 *Owner Menu* 」
-├ ${prefix}react [emoji]
-├ ${prefix}chat [option]
-├ ${prefix}join [link]
-├ ${prefix}leave
-├ ${prefix}block @user
-├ ${prefix}unblock @user
-├ ${prefix}bcgroup [text]
-├ ${prefix}bcall [text]
-├ ${prefix}setppbot [image]
-├ ${prefix}setexif
 └───────
 `
 }

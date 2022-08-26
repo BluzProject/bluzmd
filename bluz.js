@@ -19,6 +19,7 @@ const speed = require('performance-now')
 const { performance } = require('perf_hooks')
 const { Primbon } = require('scrape-primbon')
 const primbon = new Primbon()
+const hxz = require('hxz-api')
 const { smsg, formatp, tanggal, formatDate, getTime, isUrl, sleep, clockString, runtime, fetchJson, getBuffer, jsonformat, format, parseMention, getRandom, getGroupAdmins } = require('./lib/myfunc')
 
 // read database
@@ -33,6 +34,16 @@ let tebakkalimat = db.data.game.kalimat = []
 let tebaklirik = db.data.game.lirik = []
 let tebaktebakan = db.data.game.tebakan = []
 let vote = db.data.others.vote = []
+
+ //[================================< DATABASE >==========================]
+ //DB AUTO STICKER
+ const _autostick = JSON.parse(fs.readFileSync('./database/autostickpc.json'))
+ let autosticker = JSON.parse(fs.readFileSync('./database/grup/autosticker.json'))
+ //DBRPLY
+ let setik = JSON.parse(fs.readFileSync('./database/autoreply/sticker.json'))
+ let vien = JSON.parse(fs.readFileSync('./database/autoreply/audio.json'))
+ let imagi = JSON.parse(fs.readFileSync('./database/autoreply/image.json'))
+ let videox = JSON.parse(fs.readFileSync('./database/autoreply/video.json'))
 
         //waktu
         let dt = moment(Date.now()).tz('Asia/Jakarta').locale('id').format('a')
@@ -76,6 +87,8 @@ module.exports = bluz = async (bluz, m, chatUpdate, store) => {
     	const isBotAdmins = m.isGroup ? groupAdmins.includes(botNumber) : false
     	const isAdmins = m.isGroup ? groupAdmins.includes(m.sender) : false
     	const isPremium = isCreator || global.premium.map(v => v.replace(/[^0-9]/g, '') + '@s.whatsapp.net').includes(m.sender) || false
+        const isAutoStick = _autostick.includes(from)
+        const isAutoSticker = m.isGroup ? autosticker.includes(from) : false
 	
 	
 	try {
@@ -141,6 +154,46 @@ module.exports = bluz = async (bluz, m, chatUpdate, store) => {
                 let detiknye1 = Math.floor(selisih1 % (1000 * 60) / (1000));
         
                 // ===================] FCN WAKTU RAMDHAN END HITUNG MUNDUR [=======================
+            
+                    // Autosticker gc
+        if (isAutoSticker) {
+            if (/image/.test(mime) && !/webp/.test(mime)) {
+                let mediac = await quoted.download()
+                await bluz.sendImageAsSticker(from, mediac, m, { packname: global.packname, author: global.author })
+                console.log(`Auto sticker detected`)
+            } else if (/video/.test(mime)) {
+                if ((quoted.msg || quoted).seconds > 11) return
+                let mediac = await quoted.download()
+                await bluz.sendVideoAsSticker(from, mediac, m, { packname: global.packname, author: global.author })
+            }
+        }
+        //Autosticker pc
+                if (isAutoStick) {
+            if (/image/.test(mime) && !/webp/.test(mime)) {
+                let mediac = await quoted.download()
+                await bluz.sendImageAsSticker(from, mediac, m, { packname: global.packname, author: global.author })
+                console.log(`Auto sticker detected`)
+            } else if (/video/.test(mime)) {
+                if ((quoted.msg || quoted).seconds > 11) return
+                let mediac = await quoted.download()
+                await bluz.sendVideoAsSticker(from, mediac, m, { packname: global.packname, author: global.author })
+            }
+        }
+
+                //anti viewonce
+                if (m.mtype == 'viewOnceMessage') {
+                    if (!db.data.chats[m.chat].antionce) return
+                teks = 
+`「 *Anti ViewOnce Message* 」
+Name : ${m.pushName}
+User : @${m.sender.split("@")[0]}
+Clock : ${moment.tz('Asia/Kolkata').format('HH:mm:ss')} 
+Date : ${moment.tz('Asia/Kolkata').format('DD/MM/YYYY')}
+MessageType : ${m.mtype}`
+                bluz.sendTextWithMentions(m.chat, teks, m)
+                await sleep(500)
+                m.copyNForward(m.chat, true, { readViewOnce: true }).catch(_ => m.reply(`Maybe it's been opened by a bot`))
+                }
 
         // Public & Self
         if (!bluz.public) {
@@ -633,13 +686,6 @@ _*${ucapanWaktu} ${pushname !== undefined ? pushname : 'Kak'}*_
 {"quickReplyButton": {"displayText": "👛 Donasi","id": 'donasi'}},{"quickReplyButton": {"displayText": "🗳 Bug Report","id": 'report'}}] )
                 }
     break
-	    case 'afk': {
-                let user = global.db.data.users[m.sender]
-                user.afkTime = + new Date
-                user.afkReason = text
-                m.reply(`${m.pushName} Telah Afk${text ? ': ' + text : ''}`)
-            }
-            break	
         case 'ttc': case 'ttt': case 'tictactoe': {
             let TicTacToe = require("./lib/tictactoe")
             this.game = this.game ? this.game : {}
@@ -745,143 +791,8 @@ Silahkan @${m.mentionedJid[0].split`@`[0]} untuk ketik terima/tolak`
                 }
             }
             break
-            case 'report': {
-                m.reply('#report min ignya error')
-                //if (isBan) return reply(mess.ban)	 			
-                //if (isBanChat) return reply(mess.banChat)
-                if (!args.join(" ")) return m.reply(`Example : \n- ${prefix + command} min ytmp4nya error\n- ${prefix + command} hey dev this user is spamming`)
-                teks = `*| REPORT |*`
-                teks1 = `\n\nNumber : @${m.sender.split("@")[0]}\nReport : ${args.join(" ")}`
-                teks2 = `\n\nSuccessfully sent to owner`
-                teks3 = `\n\nuntuk membalas bug report kamu cukup ketik #pesanbug 628|nanti kita fix ignya`
-                for (let i of owner) {
-                bluz.sendMessage(i + "@s.whatsapp.net", {text: teks + teks1 + teks3, mentions:[m.sender]}, {quoted:m})
-                }
-                bluz.sendMessage(m.chat, {text: teks + teks2 + teks1, mentions:[m.sender]}, {quoted:m})
-             }
-             break
             //[================================< CASE FUN >==========================]
             
-            //[================================< CASE GAME >==========================]
-	    case 'family100': {
-                if ('family100'+m.chat in _family100) {
-                    m.reply('Masih Ada Sesi Yang Belum Diselesaikan!')
-                    throw false
-                }
-                let anu = await fetchJson('https://raw.githubusercontent.com/BochilTeam/database/master/games/family100.json')
-                let random = anu[Math.floor(Math.random() * anu.length)]
-                let hasil = `*Jawablah Pertanyaan Berikut :*\n${random.soal}\n\nTerdapat *${random.jawaban.length}* Jawaban ${random.jawaban.find(v => v.includes(' ')) ? `(beberapa Jawaban Terdapat Spasi)` : ''}`.trim()
-                _family100['family100'+m.chat] = {
-                    id: 'family100'+m.chat,
-                    pesan: await bluz.sendText(m.chat, hasil, m),
-                    ...random,
-                    terjawab: Array.from(random.jawaban, () => false),
-                    hadiah: 6,
-                }
-            }
-            break
-            case 'tebak': {
-                if (!text) throw `Example : ${prefix + command} lagu\n\nOption : \n1. lagu\n2. gambar\n3. kata\n4. kalimat\n5. lirik\n6.lontong`
-                if (args[0] === "lagu") {
-                    if (tebaklagu.hasOwnProperty(m.sender.split('@')[0])) throw "Masih Ada Sesi Yang Belum Diselesaikan!"
-                    let anu = await fetchJson('https://fatiharridho.github.io/tebaklagu.json')
-                    let result = anu[Math.floor(Math.random() * anu.length)]
-                    let msg = await bluz.sendMessage(m.chat, { audio: { url: result.link_song }, mimetype: 'audio/mpeg' }, { quoted: m })
-                    bluz.sendText(m.chat, `Lagu Tersebut Adalah Lagu dari?\n\nArtist : ${result.artist}\nWaktu : 60s`, msg).then(() => {
-                    tebaklagu[m.sender.split('@')[0]] = result.jawaban.toLowerCase()
-                    })
-                    await sleep(60000)
-                    if (tebaklagu.hasOwnProperty(m.sender.split('@')[0])) {
-                    console.log("Jawaban: " + result.jawaban)
-                    bluz.sendButtonText(m.chat, [{ buttonId: 'tebak lagu', buttonText: { displayText: 'Tebak Lagu' }, type: 1 }], `Waktu Habis\nJawaban:  ${tebaklagu[m.sender.split('@')[0]]}\n\nIngin bermain? tekan button dibawah`, bluz.user.name, m)
-                    delete tebaklagu[m.sender.split('@')[0]]
-                    }
-                } else if (args[0] === 'gambar') {
-                    if (tebakgambar.hasOwnProperty(m.sender.split('@')[0])) throw "Masih Ada Sesi Yang Belum Diselesaikan!"
-                    let anu = await fetchJson('https://raw.githubusercontent.com/BochilTeam/database/master/games/tebakgambar.json')
-                    let result = anu[Math.floor(Math.random() * anu.length)]
-                    bluz.sendImage(m.chat, result.img, `Silahkan Jawab Soal Di Atas Ini\n\nDeskripsi : ${result.deskripsi}\nWaktu : 60s`, m).then(() => {
-                    tebakgambar[m.sender.split('@')[0]] = result.jawaban.toLowerCase()
-                    })
-                    await sleep(60000)
-                    if (tebakgambar.hasOwnProperty(m.sender.split('@')[0])) {
-                    console.log("Jawaban: " + result.jawaban)
-                    bluz.sendButtonText(m.chat, [{ buttonId: 'tebak gambar', buttonText: { displayText: 'Tebak Gambar' }, type: 1 }], `Waktu Habis\nJawaban:  ${tebakgambar[m.sender.split('@')[0]]}\n\nIngin bermain? tekan button dibawah`, bluz.user.name, m)
-                    delete tebakgambar[m.sender.split('@')[0]]
-                    }
-                } else if (args[0] === 'kata') {
-                    if (tebakkata.hasOwnProperty(m.sender.split('@')[0])) throw "Masih Ada Sesi Yang Belum Diselesaikan!"
-                    let anu = await fetchJson('https://raw.githubusercontent.com/BochilTeam/database/master/games/tebakkata.json')
-                    let result = anu[Math.floor(Math.random() * anu.length)]
-                    bluz.sendText(m.chat, `Silahkan Jawab Pertanyaan Berikut\n\n${result.soal}\nWaktu : 60s`, m).then(() => {
-                    tebakkata[m.sender.split('@')[0]] = result.jawaban.toLowerCase()
-                    })
-                    await sleep(60000)
-                    if (tebakkata.hasOwnProperty(m.sender.split('@')[0])) {
-                    console.log("Jawaban: " + result.jawaban)
-                    bluz.sendButtonText(m.chat, [{ buttonId: 'tebak kata', buttonText: { displayText: 'Tebak Kata' }, type: 1 }], `Waktu Habis\nJawaban:  ${tebakkata[m.sender.split('@')[0]]}\n\nIngin bermain? tekan button dibawah`, bluz.user.name, m)
-                    delete tebakkata[m.sender.split('@')[0]]
-                    }
-                } else if (args[0] === 'kalimat') {
-                    if (tebakkalimat.hasOwnProperty(m.sender.split('@')[0])) throw "Masih Ada Sesi Yang Belum Diselesaikan!"
-                    let anu = await fetchJson('https://raw.githubusercontent.com/BochilTeam/database/master/games/tebakkalimat.json')
-                    let result = anu[Math.floor(Math.random() * anu.length)]
-                    bluz.sendText(m.chat, `Silahkan Jawab Pertanyaan Berikut\n\n${result.soal}\nWaktu : 60s`, m).then(() => {
-                    tebakkalimat[m.sender.split('@')[0]] = result.jawaban.toLowerCase()
-                    })
-                    await sleep(60000)
-                    if (tebakkalimat.hasOwnProperty(m.sender.split('@')[0])) {
-                    console.log("Jawaban: " + result.jawaban)
-                    bluz.sendButtonText(m.chat, [{ buttonId: 'tebak kalimat', buttonText: { displayText: 'Tebak Kalimat' }, type: 1 }], `Waktu Habis\nJawaban:  ${tebakkalimat[m.sender.split('@')[0]]}\n\nIngin bermain? tekan button dibawah`, bluz.user.name, m)
-                    delete tebakkalimat[m.sender.split('@')[0]]
-                    }
-                } else if (args[0] === 'lirik') {
-                    if (tebaklirik.hasOwnProperty(m.sender.split('@')[0])) throw "Masih Ada Sesi Yang Belum Diselesaikan!"
-                    let anu = await fetchJson('https://raw.githubusercontent.com/BochilTeam/database/master/games/tebaklirik.json')
-                    let result = anu[Math.floor(Math.random() * anu.length)]
-                    bluz.sendText(m.chat, `Ini Adalah Lirik Dari Lagu? : *${result.soal}*?\nWaktu : 60s`, m).then(() => {
-                    tebaklirik[m.sender.split('@')[0]] = result.jawaban.toLowerCase()
-                    })
-                    await sleep(60000)
-                    if (tebaklirik.hasOwnProperty(m.sender.split('@')[0])) {
-                    console.log("Jawaban: " + result.jawaban)
-                    bluz.sendButtonText(m.chat, [{ buttonId: 'tebak lirik', buttonText: { displayText: 'Tebak Lirik' }, type: 1 }], `Waktu Habis\nJawaban:  ${tebaklirik[m.sender.split('@')[0]]}\n\nIngin bermain? tekan button dibawah`, bluz.user.name, m)
-                    delete tebaklirik[m.sender.split('@')[0]]
-                    }
-                } else if (args[0] === 'lontong') {
-                    if (caklontong.hasOwnProperty(m.sender.split('@')[0])) throw "Masih Ada Sesi Yang Belum Diselesaikan!"
-                    let anu = await fetchJson('https://raw.githubusercontent.com/BochilTeam/database/master/games/caklontong.json')
-                    let result = anu[Math.floor(Math.random() * anu.length)]
-                    bluz.sendText(m.chat, `*Jawablah Pertanyaan Berikut :*\n${result.soal}*\nWaktu : 60s`, m).then(() => {
-                    caklontong[m.sender.split('@')[0]] = result.jawaban.toLowerCase()
-		    caklontong_desk[m.sender.split('@')[0]] = result.deskripsi
-                    })
-                    await sleep(60000)
-                    if (caklontong.hasOwnProperty(m.sender.split('@')[0])) {
-                    console.log("Jawaban: " + result.jawaban)
-                    bluz.sendButtonText(m.chat, [{ buttonId: 'tebak lontong', buttonText: { displayText: 'Tebak Lontong' }, type: 1 }], `Waktu Habis\nJawaban:  ${caklontong[m.sender.split('@')[0]]}\nDeskripsi : ${caklontong_desk[m.sender.split('@')[0]]}\n\nIngin bermain? tekan button dibawah`, bluz.user.name, m)
-                    delete caklontong[m.sender.split('@')[0]]
-		    delete caklontong_desk[m.sender.split('@')[0]]
-                    }
-                }
-            }
-            break
-            case 'kuismath': case 'math': {
-                if (kuismath.hasOwnProperty(m.sender.split('@')[0])) throw "Masih Ada Sesi Yang Belum Diselesaikan!"
-                let { genMath, modes } = require('./src/math')
-                if (!text) throw `Mode: ${Object.keys(modes).join(' | ')}\nContoh penggunaan: ${prefix}math medium`
-                let result = await genMath(text.toLowerCase())
-                bluz.sendText(m.chat, `*Berapa hasil dari: ${result.soal.toLowerCase()}*?\n\nWaktu: ${(result.waktu / 1000).toFixed(2)} detik`, m).then(() => {
-                    kuismath[m.sender.split('@')[0]] = result.jawaban
-                })
-                await sleep(result.waktu)
-                if (kuismath.hasOwnProperty(m.sender.split('@')[0])) {
-                    console.log("Jawaban: " + result.jawaban)
-                    m.reply("Waktu Habis\nJawaban: " + kuismath[m.sender.split('@')[0]])
-                    delete kuismath[m.sender.split('@')[0]]
-                }
-            }
-            break
             case 'react': {
                 if (!isCreator) throw mess.owner
                 reactionMessage = {
@@ -893,136 +804,6 @@ Silahkan @${m.mentionedJid[0].split`@`[0]} untuk ketik terima/tolak`
                 bluz.sendMessage(m.chat, reactionMessage)
             }
             break
-            //[================================< CASE GRUP >==========================]    
-            case 'join': {
-                if (!isCreator) throw mess.owner
-                if (!text) throw 'Masukkan Link Group!'
-                if (!isUrl(args[0]) && !args[0].includes('whatsapp.com')) throw 'Link Invalid!'
-                m.reply(mess.wait)
-                let result = args[0].split('https://chat.whatsapp.com/')[1]
-                await bluz.groupAcceptInvite(result).then((res) => m.reply(jsonformat(res))).catch((err) => m.reply(jsonformat(err)))
-            }
-            break
-            case 'leave': {
-                if (!isCreator) throw mess.owner
-                await bluz.groupLeave(m.chat).then((res) => m.reply(jsonformat(res))).catch((err) => m.reply(jsonformat(err)))
-            }
-            break
-            case 'setexif': {
-               if (!isCreator) throw mess.owner
-               if (!text) throw `Example : ${prefix + command} packname|author`
-          global.packname = text.split("|")[0]
-          global.author = text.split("|")[1]
-          m.reply(`Exif berhasil diubah menjadi\n\n⭔ Packname : ${global.packname}\n⭔ Author : ${global.author}`)
-            }
-            break
-	case 'kick': {
-		if (!m.isGroup) throw mess.group
-        if (!isBotAdmins) throw mess.botAdmin
-        if (!isAdmins) throw mess.admin
-		let users = m.mentionedJid[0] ? m.mentionedJid : m.quoted ? [m.quoted.sender] : [text.replace(/[^0-9]/g, '')+'@s.whatsapp.net']
-		await bluz.groupParticipantsUpdate(m.chat, users, 'remove').then((res) => m.reply(jsonformat(res))).catch((err) => m.reply(jsonformat(err)))
-	}
-	break
-	case 'add': {
-		if (!m.isGroup) throw mess.group
-        if (!isBotAdmins) throw mess.botAdmin
-        if (!isAdmins) throw mess.admin
-		let users = m.mentionedJid[0] ? m.mentionedJid : m.quoted ? [m.quoted.sender] : [text.replace(/[^0-9]/g, '')+'@s.whatsapp.net']
-		await bluz.groupParticipantsUpdate(m.chat, users, 'add').then((res) => m.reply(jsonformat(res))).catch((err) => m.reply(jsonformat(err)))
-	}
-	break
-	case 'promote': {
-		if (!m.isGroup) throw mess.group
-        if (!isBotAdmins) throw mess.botAdmin
-        if (!isAdmins) throw mess.admin
-		let users = m.mentionedJid[0] ? m.mentionedJid : m.quoted ? [m.quoted.sender] : [text.replace(/[^0-9]/g, '')+'@s.whatsapp.net']
-		await bluz.groupParticipantsUpdate(m.chat, users, 'promote').then((res) => m.reply(jsonformat(res))).catch((err) => m.reply(jsonformat(err)))
-	}
-	break
-	case 'demote': {
-		if (!m.isGroup) throw mess.group
-        if (!isBotAdmins) throw mess.botAdmin
-        if (!isAdmins) throw mess.admin
-		let users = m.mentionedJid[0] ? m.mentionedJid : m.quoted ? [m.quoted.sender] : [text.replace(/[^0-9]/g, '')+'@s.whatsapp.net']
-		await bluz.groupParticipantsUpdate(m.chat, users, 'demote').then((res) => m.reply(jsonformat(res))).catch((err) => m.reply(jsonformat(err)))
-	}
-	break
-        case 'block': {
-		if (!isCreator) throw mess.owner
-		let users = m.mentionedJid[0] ? m.mentionedJid[0] : m.quoted ? m.quoted.sender : text.replace(/[^0-9]/g, '')+'@s.whatsapp.net'
-		await bluz.updateBlockStatus(users, 'block').then((res) => m.reply(jsonformat(res))).catch((err) => m.reply(jsonformat(err)))
-	}
-	break
-        case 'unblock': {
-		if (!isCreator) throw mess.owner
-		let users = m.mentionedJid[0] ? m.mentionedJid[0] : m.quoted ? m.quoted.sender : text.replace(/[^0-9]/g, '')+'@s.whatsapp.net'
-		await bluz.updateBlockStatus(users, 'unblock').then((res) => m.reply(jsonformat(res))).catch((err) => m.reply(jsonformat(err)))
-	}
-	break
-	    case 'setname': case 'setsubject': {
-                if (!m.isGroup) throw mess.group
-                if (!isBotAdmins) throw mess.botAdmin
-                if (!isAdmins) throw mess.admin
-                if (!text) throw 'Text ?'
-                await bluz.groupUpdateSubject(m.chat, text).then((res) => m.reply(mess.success)).catch((err) => m.reply(jsonformat(err)))
-            }
-            break
-          case 'setdesc': case 'setdesk': {
-                if (!m.isGroup) throw mess.group
-                if (!isBotAdmins) throw mess.botAdmin
-                if (!isAdmins) throw mess.admin
-                if (!text) throw 'Text ?'
-                await bluz.groupUpdateDescription(m.chat, text).then((res) => m.reply(mess.success)).catch((err) => m.reply(jsonformat(err)))
-            }
-            break
-          case 'setppbot': {
-                if (!isCreator) throw mess.owner
-                if (!/image/.test(mime)) throw `Kirim/Reply Image Dengan Caption ${prefix + command}`
-                if (/webp/.test(mime)) throw `Kirim/Reply Image Dengan Caption ${prefix + command}`
-                let media = await bluz.downloadAndSaveMediaMessage(qmsg)
-                await bluz.updateProfilePicture(botNumber, { url: media }).catch((err) => fs.unlinkSync(media))
-                m.reply(mess.success)
-                }
-                break
-           case 'setppgroup': case 'setppgrup': case 'setppgc': {
-                if (!m.isGroup) throw mess.group
-                if (!isAdmins) throw mess.admin
-                if (!/image/.test(mime)) throw `Kirim/Reply Image Dengan Caption ${prefix + command}`
-                if (/webp/.test(mime)) throw `Kirim/Reply Image Dengan Caption ${prefix + command}`
-                let media = await bluz.downloadAndSaveMediaMessage(qmsg)
-                await bluz.updateProfilePicture(m.chat, { url: media }).catch((err) => fs.unlinkSync(media))
-                m.reply(mess.success)
-                }
-                break
-            case 'tagall': {
-                if (!m.isGroup) throw mess.group
-                if (!isBotAdmins) throw mess.botAdmin
-                if (!isAdmins) throw mess.admin
-let teks = `══✪〘 *👥 Tag All* 〙✪══
- 
- ➲ *Pesan : ${q ? q : 'kosong'}*\n\n`
-                for (let mem of participants) {
-                teks += `⭔ @${mem.id.split('@')[0]}\n`
-                }
-                bluz.sendMessage(m.chat, { text: teks, mentions: participants.map(a => a.id) }, { quoted: m })
-                }
-                break
-                case 'hidetag': {
-            if (!m.isGroup) throw mess.group
-            if (!isBotAdmins) throw mess.botAdmin
-            if (!isAdmins) throw mess.admin
-            bluz.sendMessage(m.chat, { text : q ? q : '' , mentions: participants.map(a => a.id)}, { quoted: m })
-            }
-            break
-               case 'totag': {
-               if (!m.isGroup) throw mess.group
-               if (!isBotAdmins) throw mess.botAdmin
-               if (!isAdmins) throw mess.admin
-               if (!m.quoted) throw `Reply pesan dengan caption ${prefix + command}`
-               bluz.sendMessage(m.chat, { forward: m.quoted.fakeObj, mentions: participants.map(a => a.id) })
-               }
-               break
 	    case 'style': case 'styletext': {
 	        if (!isPremium && global.db.data.users[m.sender].limit < 1) return m.reply(mess.endLimit) // respon ketika limit habis
 		db.data.users[m.sender].limit -= 1 // -1 limit
@@ -1198,63 +979,6 @@ break
             m.reply('Berhasil Menghapus Sesi Vote Di Grup Ini')
 	    }
             break
-               case 'group': case 'grup': {
-                if (!m.isGroup) throw mess.group
-                if (!isBotAdmins) throw mess.botAdmin
-                if (!isAdmins) throw mess.admin
-                if (args[0] === 'close'){
-                    await bluz.groupSettingUpdate(m.chat, 'announcement').then((res) => m.reply(`Sukses Menutup Group`)).catch((err) => m.reply(jsonformat(err)))
-                } else if (args[0] === 'open'){
-                    await bluz.groupSettingUpdate(m.chat, 'not_announcement').then((res) => m.reply(`Sukses Membuka Group`)).catch((err) => m.reply(jsonformat(err)))
-                } else {
-                let buttons = [
-                        { buttonId: 'group open', buttonText: { displayText: 'Open' }, type: 1 },
-                        { buttonId: 'group close', buttonText: { displayText: 'Close' }, type: 1 }
-                    ]
-                    await bluz.sendButtonText(m.chat, buttons, `Mode Group`, bluz.user.name, m)
-
-             }
-            }
-            break
-            case 'editinfo': {
-                if (!m.isGroup) throw mess.group
-                if (!isBotAdmins) throw mess.botAdmin
-                if (!isAdmins) throw mess.admin
-             if (args[0] === 'open'){
-                await bluz.groupSettingUpdate(m.chat, 'unlocked').then((res) => m.reply(`Sukses Membuka Edit Info Group`)).catch((err) => m.reply(jsonformat(err)))
-             } else if (args[0] === 'close'){
-                await bluz.groupSettingUpdate(m.chat, 'locked').then((res) => m.reply(`Sukses Menutup Edit Info Group`)).catch((err) => m.reply(jsonformat(err)))
-             } else {
-             let buttons = [
-                        { buttonId: 'editinfo open', buttonText: { displayText: 'Open' }, type: 1 },
-                        { buttonId: 'editinfo close', buttonText: { displayText: 'Close' }, type: 1 }
-                    ]
-                    await bluz.sendButtonText(m.chat, buttons, `Mode Edit Info`, bluz.user.name, m)
-
-            }
-            }
-            break
-            case 'antilink': {
-                if (!m.isGroup) throw mess.group
-                if (!isBotAdmins) throw mess.botAdmin
-                if (!isAdmins) throw mess.admin
-                if (args[0] === "on") {
-                if (db.data.chats[m.chat].antilink) return m.reply(`Sudah Aktif Sebelumnya`)
-                db.data.chats[m.chat].antilink = true
-                m.reply(`Antilink Aktif !`)
-                } else if (args[0] === "off") {
-                if (!db.data.chats[m.chat].antilink) return m.reply(`Sudah Tidak Aktif Sebelumnya`)
-                db.data.chats[m.chat].antilink = false
-                m.reply(`Antilink Tidak Aktif !`)
-                } else {
-                 let buttons = [
-                        { buttonId: 'antilink on', buttonText: { displayText: 'On' }, type: 1 },
-                        { buttonId: 'antilink off', buttonText: { displayText: 'Off' }, type: 1 }
-                    ]
-                    await bluz.sendButtonText(m.chat, buttons, `Mode Antilink`, bluz.user.name, m)
-                }
-             }
-             break
              case 'muteb': {
                 if (!m.isGroup) throw mess.group
                 if (!isBotAdmins) throw mess.botAdmin
@@ -1361,8 +1085,8 @@ break
                     await sleep(1500)
                     let btn = [{
                                 urlButton: {
-                                    displayText: 'Source Code',
-                                    url: 'https://github.com/DikaArdnt/bluz-Morou'
+                                    displayText: 'Website',
+                                    url: 'https://bluztekno.blogspot.com/'
                                 }
                             }, {
                                 callButton: {
@@ -1381,8 +1105,8 @@ break
                                 }  
                             }, {
                                 quickReplyButton: {
-                                    displayText: 'Script',
-                                    id: 'sc'
+                                    displayText: 'Bug Report',
+                                    id: 'report'
                                 }
                             }]
                       let txt = `「 Broadcast Bot 」\n\n${text}`
@@ -1400,8 +1124,8 @@ break
 		    await sleep(1500)
 		    let btn = [{
                                 urlButton: {
-                                    displayText: 'Source Code',
-                                    url: 'https://github.com/DikaArdnt/bluz-Morou'
+                                    displayText: 'Website',
+                                    url: 'https://bluztekno.blogspot.com/'
                                 }
                             }, {
                                 callButton: {
@@ -1420,8 +1144,8 @@ break
                                 }  
                             }, {
                                 quickReplyButton: {
-                                    displayText: 'Script',
-                                    id: 'sc'
+                                    displayText: 'Bug Report',
+                                    id: 'report'
                                 }
                             }]
                       let txt = `「 Broadcast Bot 」\n\n${text}`
@@ -1478,42 +1202,6 @@ break
                     bluz.sendText(m.chat, 'List Online:\n\n' + online.map(v => '⭔ @' + v.replace(/@.+/, '')).join`\n`, m, { mentions: online })
              }
              break
-            case 'sticker': case 's': case 'stickergif': case 'sgif': {
-           if (/image/.test(mime)) {
-           m.reply(mess.wait)
-                let media = await bluz.downloadMediaMessage(qmsg)
-                let encmedia = await bluz.sendImageAsSticker(m.chat, media, m, { packname: global.packname, author: global.author })
-                await fs.unlinkSync(encmedia)
-            } else if (/video/.test(mime)) {
-            m.reply(mess.wait)
-                if (qmsg.seconds > 11) return m.reply('Maksimal 10 detik!')
-                let media = await bluz.downloadMediaMessage(qmsg)
-                let encmedia = await bluz.sendVideoAsSticker(m.chat, media, m, { packname: global.packname, author: global.author })
-                await fs.unlinkSync(encmedia)
-            } else {
-                m.reply(`Kirim/reply gambar/video/gif dengan caption ${prefix + command}\nDurasi Video/Gif 1-9 Detik`)
-                }
-            }
-            break
-            case 'stickerwm': case 'swm': case 'stickergifwm': case 'sgifwm': {
-                let [teks1, teks2] = text.split`|`
-                if (!teks1) throw `Kirim/reply image/video dengan caption ${prefix + command} teks1|teks2`
-                if (!teks2) throw `Kirim/reply image/video dengan caption ${prefix + command} teks1|teks2`
-            	m.reply(mess.wait)
-                if (/image/.test(mime)) {
-                    let media = await bluz.downloadMediaMessage(qmsg)
-                    let encmedia = await bluz.sendImageAsSticker(m.chat, media, m, { packname: teks1, author: teks2 })
-                    await fs.unlinkSync(encmedia)
-                } else if (/video/.test(mime)) {
-                    if ((quoted.msg || quoted).seconds > 11) return m.reply('Maksimal 10 detik!')
-                    let media = await bluz.downloadMediaMessage(qmsg)
-                    let encmedia = await bluz.sendVideoAsSticker(m.chat, media, m, { packname: teks1, author: teks2 })
-                    await fs.unlinkSync(encmedia)
-                } else {
-                    throw `Kirim Gambar/Video Dengan Caption ${prefix + command}\nDurasi Video 1-9 Detik`
-                }
-            }
-            break
             case 'ebinary': {
             if (!text) throw `Example : ${prefix + command} text`
             let { eBinary } = require('./lib/binary')
@@ -1528,51 +1216,30 @@ break
             m.reply(db)
         }
         break
-            case 'emojimix': {
-		let [emoji1, emoji2] = text.split`+`
-		if (!emoji1) throw `Example : ${prefix + command} 😅+🤔`
-		if (!emoji2) throw `Example : ${prefix + command} 😅+🤔`
-		let anu = await fetchJson(`https://tenor.googleapis.com/v2/featured?key=AIzaSyAyimkuYQYF_FXVALexPuGQctUWRURdCYQ&contentfilter=high&media_filter=png_transparent&component=proactive&collection=emoji_kitchen_v5&q=${encodeURIComponent(emoji1)}_${encodeURIComponent(emoji2)}`)
-		for (let res of anu.results) {
-		    let encmedia = await bluz.sendImageAsSticker(m.chat, res.url, m, { packname: global.packname, author: global.author, categories: res.tags })
-		    await fs.unlinkSync(encmedia)
-		}
-	    }
-	    break
-	    case 'emojimix2': {
-	    if (!text) throw `Example : ${prefix + command} 😅`
-		let anu = await fetchJson(`https://tenor.googleapis.com/v2/featured?key=AIzaSyAyimkuYQYF_FXVALexPuGQctUWRURdCYQ&contentfilter=high&media_filter=png_transparent&component=proactive&collection=emoji_kitchen_v5&q=${encodeURIComponent(text)}`)
-		for (let res of anu.results) {
-		    let encmedia = await bluz.sendImageAsSticker(m.chat, res.url, m, { packname: global.packname, author: global.author, categories: res.tags })
-		    await fs.unlinkSync(encmedia)
-		}
-	    }
-	    break
-	       case 'attp': case 'ttp': {
-           if (!text) throw `Example : ${prefix + command} text`
-           await bluz.sendMedia(m.chat, `https://xteam.xyz/${command}?file&text=${text}`, 'bluz', 'morou', m, {asSticker: true})
-
-         }
-         break
-	       case 'smeme': case 'stickmeme': case 'stikmeme': case 'stickermeme': case 'stikermeme': {
-	        let respond = `Kirim/reply image/sticker dengan caption ${prefix + command} text1|text2`
-	        if (!/image/.test(mime)) throw respond
-            if (!text) throw respond
-	        m.reply(mess.wait)
-            atas = text.split('|')[0] ? text.split('|')[0] : '-'
-            bawah = text.split('|')[1] ? text.split('|')[1] : '-'
-	        let dwnld = await bluz.downloadMediaMessage(qmsg)
-	        let { floNime } = require('./lib/uploader')
-	        let fatGans = await floNime(dwnld)
-	        let smeme = `https://api.memegen.link/images/custom/${encodeURIComponent(atas)}/${encodeURIComponent(bawah)}.png?background=${fatGans.result.url}`
-	        let FaTiH = await bluz.sendImageAsSticker(m.chat, smeme, m, { packname: global.packname, author: global.auhor })
-	        await fs.unlinkSync(FaTiH)
-            }
-	       break     
 	        case 'simih': case 'simisimi': {
             if (!text) throw `Example : ${prefix + command} text`
             hm = await fetchJson(api('zenz', '/api/simisimi', { text : text }, 'apikey'))
             m.reply(hm.result.message)
+            }
+            break
+            //[================================< CASE CONVERT >==========================]
+            case 'tomp3': {
+                if (!/video/.test(mime) && !/audio/.test(mime)) throw `Kirim/Reply Video/Audio Yang Ingin Dijadikan MP3 Dengan Caption ${prefix + command}`
+                m.reply(mess.wait)
+                let media = await bluz.downloadMediaMessage(qmsg)
+                let { toAudio } = require('./lib/converter')
+                let audio = await toAudio(media, 'mp4')
+                bluz.sendMessage(m.chat, {document: audio, mimetype: 'audio/mpeg', fileName: `Convert By ${bluz.user.name}.mp3`}, { quoted : m })
+            }
+            break
+	        case 'tomp4': case 'tovideo': {
+                if (!/webp/.test(mime)) throw `Reply stiker dengan caption *${prefix + command}*`
+                m.reply(mess.wait)
+		        let { webp2mp4File } = require('./lib/uploader')
+                let media = await bluz.downloadAndSaveMediaMessage(qmsg)
+                let webpToMp4 = await webp2mp4File(media)
+                await bluz.sendMessage(m.chat, { video: { url: webpToMp4.result, caption: 'Convert Webp To Video' } }, { quoted: m })
+                await fs.unlinkSync(media)
             }
             break
             case 'toimage': case 'toimg': {
@@ -1589,16 +1256,6 @@ break
                 })
             }
             break
-	        case 'tomp4': case 'tovideo': {
-                if (!/webp/.test(mime)) throw `Reply stiker dengan caption *${prefix + command}*`
-                m.reply(mess.wait)
-		        let { webp2mp4File } = require('./lib/uploader')
-                let media = await bluz.downloadAndSaveMediaMessage(qmsg)
-                let webpToMp4 = await webp2mp4File(media)
-                await bluz.sendMessage(m.chat, { video: { url: webpToMp4.result, caption: 'Convert Webp To Video' } }, { quoted: m })
-                await fs.unlinkSync(media)
-            }
-            break
             case 'toaud': case 'toaudio': {
             if (!/video/.test(mime) && !/audio/.test(mime)) throw `Kirim/Reply Video/Audio Yang Ingin Dijadikan Audio Dengan Caption ${prefix + command}`
             m.reply(mess.wait)
@@ -1606,15 +1263,6 @@ break
             let { toAudio } = require('./lib/converter')
             let audio = await toAudio(media, 'mp4')
             bluz.sendMessage(m.chat, {audio: audio, mimetype: 'audio/mpeg'}, { quoted : m })
-            }
-            break
-            case 'tomp3': {
-            if (!/video/.test(mime) && !/audio/.test(mime)) throw `Kirim/Reply Video/Audio Yang Ingin Dijadikan MP3 Dengan Caption ${prefix + command}`
-            m.reply(mess.wait)
-            let media = await bluz.downloadMediaMessage(qmsg)
-            let { toAudio } = require('./lib/converter')
-            let audio = await toAudio(media, 'mp4')
-            bluz.sendMessage(m.chat, {document: audio, mimetype: 'audio/mpeg', fileName: `Convert By ${bluz.user.name}.mp3`}, { quoted : m })
             }
             break
             case 'tovn': case 'toptt': {
@@ -1637,6 +1285,7 @@ break
             }
             break
 	        case 'tourl': {
+                if (!isPremium && global.db.data.users[m.sender].limit < 3) return m.reply(mess.endLimit) // respon ketika limit habis
                 m.reply(mess.wait)
 		let { UploadFileUgu, webp2mp4File, TelegraPh } = require('./lib/uploader')
                 let media = await bluz.downloadAndSaveMediaMessage(qmsg)
@@ -1651,6 +1300,7 @@ break
             }
             break
             case 'imagenobg': case 'removebg': case 'remove-bg': {
+                if (!isPremium && global.db.data.users[m.sender].limit < 3) return m.reply(mess.endLimit) // respon ketika limit habis
 	    if (!/image/.test(mime)) throw `Kirim/Reply Image Dengan Caption ${prefix + command}`
 	    if (/webp/.test(mime)) throw `Kirim/Reply Image Dengan Caption ${prefix + command}`
 	    let remobg = require('remove.bg')
@@ -1674,143 +1324,453 @@ break
 	    })
 	    }
 	    break
-	    case 'yts': case 'ytsearch': {
-                if (!text) throw `Example : ${prefix + command} story wa anime`
-                let yts = require("yt-search")
-                let search = await yts(text)
-                let teks = 'YouTube Search\n\n Result From '+text+'\n\n'
-                let no = 1
-                for (let i of search.all) {
-                    teks += `⭔ No : ${no++}\n⭔ Type : ${i.type}\n⭔ Video ID : ${i.videoId}\n⭔ Title : ${i.title}\n⭔ Views : ${i.views}\n⭔ Duration : ${i.timestamp}\n⭔ Upload At : ${i.ago}\n⭔ Author : ${i.author.name}\n⭔ Url : ${i.url}\n\n─────────────────\n\n`
-                }
-                bluz.sendMessage(m.chat, { image: { url: search.all[0].thumbnail },  caption: teks }, { quoted: m })
-            }
-            break
-        case 'google': {
-                if (!text) throw `Example : ${prefix + command} fatih arridho`
-                let google = require('google-it')
-                google({'query': text}).then(res => {
-                let teks = `Google Search From : ${text}\n\n`
-                for (let g of res) {
-                teks += `⭔ *Title* : ${g.title}\n`
-                teks += `⭔ *Description* : ${g.snippet}\n`
-                teks += `⭔ *Link* : ${g.link}\n\n────────────────────────\n\n`
-                } 
-                m.reply(teks)
-                })
+            //[================================< CASE DOWNLOAD >==========================]
+            case 'play': case 'ytplay': {
+                if (!isPremium && global.db.data.users[m.sender].limit < 3) return m.reply(mess.endLimit) // respon ketika limit habis
+                    if (!text) throw `Example : ${prefix + command} story wa anime`
+                    let yts = require("yt-search")
+                    let search = await yts(text)
+                    let anu = search.videos[Math.floor(Math.random() * search.videos.length)]
+                    let buttons = [
+                        {buttonId: `ytmp3 ${anu.url}`, buttonText: {displayText: '♫ Audio'}, type: 1},
+                        {buttonId: `ytmp4 ${anu.url}`, buttonText: {displayText: '► Video'}, type: 1}
+                    ]
+                    let buttonMessage = {
+                        image: { url: anu.thumbnail },
+                        caption: `
+    ⭔ Title : ${anu.title}
+    ⭔ Ext : Search
+    ⭔ ID : ${anu.videoId}
+    ⭔ Duration : ${anu.timestamp}
+    ⭔ Viewers : ${anu.views}
+    ⭔ Upload At : ${anu.ago}
+    ⭔ Author : ${anu.author.name}
+    ⭔ Channel : ${anu.author.url}
+    ⭔ Description : ${anu.description}
+    ⭔ Url : ${anu.url}`,
+                        footer: bluz.user.name,
+                        buttons: buttons,
+                        headerType: 4
+                    }
+                    bluz.sendMessage(m.chat, buttonMessage, { quoted: m })
                 }
                 break
-        case 'gimage': {
-        if (!text) throw `Example : ${prefix + command} kaori cicak`
-        let gis = require('g-i-s')
-        gis(text, async (error, result) => {
-        n = result
-        images = n[Math.floor(Math.random() * n.length)].url
-        let buttons = [
-                    {buttonId: `gimage ${text}`, buttonText: {displayText: 'Next Image'}, type: 1}
-                ]
-                let buttonMessage = {
-                    image: { url: images },
-                    caption: `*-------「 GIMAGE SEARCH 」-------*
-🤠 *Query* : ${text}
-🔗 *Media Url* : ${images}`,
-                    footer: bluz.user.name,
-                    buttons: buttons,
-                    headerType: 4
+            case 'ytmp3': case 'ytaudio': {
+                if (!isPremium && global.db.data.users[m.sender].limit < 2) return m.reply(mess.endLimit) // respon ketika limit habis
+                    let { yta } = require('./lib/y2mate')
+                    if (!text) throw `Example : ${prefix + command} https://youtube.com/watch?v=PtFMh6Tccag%27 128kbps`
+                    let quality = args[1] ? args[1] : '128kbps'
+                    let media = await yta(text, quality)
+                    if (media.filesize >= 100000) return m.reply('File Melebihi Batas '+util.format(media))
+                    bluz.sendImage(m.chat, media.thumb, `⭔ Title : ${media.title}\n⭔ File Size : ${media.filesizeF}\n⭔ Url : ${isUrl(text)}\n⭔ Ext : MP3\n⭔ Resolusi : ${args[1] || '128kbps'}`, m)
+                    bluz.sendMessage(m.chat, { audio: { url: media.dl_link }, mimetype: 'audio/mpeg', fileName: `${media.title}.mp3` }, { quoted: m })
                 }
-                bluz.sendMessage(m.chat, buttonMessage, { quoted: m })
-        })
-        }
-        break
-	    case 'play': case 'ytplay': {
-                if (!text) throw `Example : ${prefix + command} story wa anime`
-                let yts = require("yt-search")
-                let search = await yts(text)
-                let anu = search.videos[Math.floor(Math.random() * search.videos.length)]
+                break
+                case 'ytmp4': case 'ytvideo': {
+                    if (!isPremium && global.db.data.users[m.sender].limit < 2) return m.reply(mess.endLimit) // respon ketika limit habis
+                    let { ytv } = require('./lib/y2mate')
+                    if (!text) throw `Example : ${prefix + command} https://youtube.com/watch?v=PtFMh6Tccag%27 360p`
+                    let quality = args[1] ? args[1] : '360p'
+                    let media = await ytv(text, quality)
+                    if (media.filesize >= 100000) return m.reply('File Melebihi Batas '+util.format(media))
+                    bluz.sendMessage(m.chat, { video: { url: media.dl_link }, mimetype: 'video/mp4', fileName: `${media.title}.mp4`, caption: `⭔ Title : ${media.title}\n⭔ File Size : ${media.filesizeF}\n⭔ Url : ${isUrl(text)}\n⭔ Ext : MP3\n⭔ Resolusi : ${args[1] || '360p'}` }, { quoted: m })
+                }
+                break
+                case 'yts': case 'ytsearch': {
+                    if (!text) throw `Example : ${prefix + command} story wa anime`
+                    let yts = require("yt-search")
+                    let search = await yts(text)
+                    let teks = 'YouTube Search\n\n Result From '+text+'\n\n'
+                    let no = 1
+                    for (let i of search.all) {
+                        teks += `⭔ No : ${no++}\n⭔ Type : ${i.type}\n⭔ Video ID : ${i.videoId}\n⭔ Title : ${i.title}\n⭔ Views : ${i.views}\n⭔ Duration : ${i.timestamp}\n⭔ Upload At : ${i.ago}\n⭔ Author : ${i.author.name}\n⭔ Url : ${i.url}\n\n─────────────────\n\n`
+                    }
+                    bluz.sendMessage(m.chat, { image: { url: search.all[0].thumbnail },  caption: teks }, { quoted: m })
+                }
+                break
+            case 'getmusic': {
+                if (!isPremium && global.db.data.users[m.sender].limit < 1) return m.reply(mess.endLimit) // respon ketika limit habis
+                    let { yta } = require('./lib/y2mate')
+                    if (!text) throw `Example : ${prefix + command} 1`
+                    if (!m.quoted) return m.reply('Reply Pesan')
+                    if (!m.quoted.isBaileys) throw `Hanya Bisa Membalas Pesan Dari Bot`
+            let urls = quoted.text.match(new RegExp(/(?:https?:\/\/)?(?:youtu\.be\/|(?:www\.|m\.)?youtube\.com\/(?:watch|v|embed|shorts)(?:\.php)?(?:\?.*v=|\/))([a-zA-Z0-9\_-]+)/, 'gi'))
+                    if (!urls) throw `Mungkin pesan yang anda reply tidak mengandung result ytsearch`
+                    let quality = args[1] ? args[1] : '128kbps'
+                    let media = await yta(urls[text - 1], quality)
+                    if (media.filesize >= 100000) return m.reply('File Melebihi Batas '+util.format(media))
+                    bluz.sendImage(m.chat, media.thumb, `⭔ Title : ${media.title}\n⭔ File Size : ${media.filesizeF}\n⭔ Url : ${urls[text - 1]}\n⭔ Ext : MP3\n⭔ Resolusi : ${args[1] || '128kbps'}`, m)
+                    bluz.sendMessage(m.chat, { audio: { url: media.dl_link }, mimetype: 'audio/mpeg', fileName: `${media.title}.mp3` }, { quoted: m })
+                }
+                break
+                case 'getvideo': {
+                    if (!isPremium && global.db.data.users[m.sender].limit < 1) return m.reply(mess.endLimit) // respon ketika limit habis
+                    let { ytv } = require('./lib/y2mate')
+                    if (!text) throw `Example : ${prefix + command} 1`
+                    if (!m.quoted) return m.reply('Reply Pesan')
+                    if (!m.quoted.isBaileys) throw `Hanya Bisa Membalas Pesan Dari Bot`
+                    let urls = quoted.text.match(new RegExp(/(?:https?:\/\/)?(?:youtu\.be\/|(?:www\.|m\.)?youtube\.com\/(?:watch|v|embed|shorts)(?:\.php)?(?:\?.*v=|\/))([a-zA-Z0-9\_-]+)/, 'gi'))
+                    if (!urls) throw `Mungkin pesan yang anda reply tidak mengandung result ytsearch`
+                    let quality = args[1] ? args[1] : '360p'
+                    let media = await ytv(urls[text - 1], quality)
+                    if (media.filesize >= 100000) return m.reply('File Melebihi Batas '+util.format(media))
+                    bluz.sendMessage(m.chat, { video: { url: media.dl_link }, mimetype: 'video/mp4', fileName: `${media.title}.mp4`, caption: `⭔ Title : ${media.title}\n⭔ File Size : ${media.filesizeF}\n⭔ Url : ${urls[text - 1]}\n⭔ Ext : MP3\n⭔ Resolusi : ${args[1] || '360p'}` }, { quoted: m })
+                }
+                break
+            case 'tiktok':
+                if (!q) throw (mess.link)
+                m.reply(`Please wait....`)
+            hxz.ttdownloader(q).then( data => {
+              bluz.sendMessage(from, { video: { url: data.wm }}, { quoted: m })
+              console.log(data)
+            }).catch(() => m.reply(mess.error.api))
+            break
+            case 'ttnowm':
+            if (!isPremium && global.db.data.users[m.sender].limit < 1) return m.reply(mess.endLimit) // respon ketika limit habis
+                if (!q) throw (mess.link)
+                const more = String.fromCharCode(8206)
+                const readmore = more.repeat(4001)
+                m.reply(`
+If this feature is error, use ttnowm2
+${readmore}
+Jika fitur ini error, gunakan ttnowm2
+`)
+            hxz.ttdownloader(q).then( data => {
+              bluz.sendMessage(from, { video: { url: data.nowm }}, { quoted: m })
+              console.log(data)
+            }).catch(() => m.reply(mess.error.api))
+            break
+            case 'ttnowm2': {
+                if (!q) throw (mess.link)
+                m.reply(mess.wait)
+                let url = args.join(' ')
+                let data = await fetchJson(`https://api.lolhuman.xyz/api/tiktok?apikey=${lolkey}&url=${url}`)
+                console.log(data)
+                let hasil = data.result
+                if ( data.status === 200 ) {
+                await sleep(1000)
+                await bluz.sendMessage(m.chat, { video: { url: hasil.link }}, { quoted: m })}
+            }
+            break
+            case 'tiktokmp3': case 'ttmp3': case 'tiktokaudio': {
+                    if (!q) throw (mess.link)
+                    m.reply(mess.wait)
+                    url = args.join(' ')
+                    let data = await getBuffer(`https://api.lolhuman.xyz/api/tiktokmusic?apikey=${lolkey}&url=${url}`)
+                    await bluz.sendMessage(m.chat, { audio: data }, { quoted: m})
+                    (m.chat, { audio: { url: data }, mimetype: 'audio/mpeg' }, { quoted: m })
+                           }
+                break
+            //[================================< CASE GAME >==========================]
+            case 'family100': {
+                if ('family100'+m.chat in _family100) {
+                    m.reply('Masih Ada Sesi Yang Belum Diselesaikan!')
+                    throw false
+                }
+                let anu = await fetchJson('https://raw.githubusercontent.com/BochilTeam/database/master/games/family100.json')
+                let random = anu[Math.floor(Math.random() * anu.length)]
+                let hasil = `*Jawablah Pertanyaan Berikut :*\n${random.soal}\n\nTerdapat *${random.jawaban.length}* Jawaban ${random.jawaban.find(v => v.includes(' ')) ? `(beberapa Jawaban Terdapat Spasi)` : ''}`.trim()
+                _family100['family100'+m.chat] = {
+                    id: 'family100'+m.chat,
+                    pesan: await bluz.sendText(m.chat, hasil, m),
+                    ...random,
+                    terjawab: Array.from(random.jawaban, () => false),
+                    hadiah: 6,
+                }
+            }
+            break
+            case 'tebak': {
+                if (!text) throw `Example : ${prefix + command} lagu\n\nOption : \n1. lagu\n2. gambar\n3. kata\n4. kalimat\n5. lirik\n6.lontong`
+                if (args[0] === "lagu") {
+                    if (tebaklagu.hasOwnProperty(m.sender.split('@')[0])) throw "Masih Ada Sesi Yang Belum Diselesaikan!"
+                    let anu = await fetchJson('https://fatiharridho.github.io/tebaklagu.json')
+                    let result = anu[Math.floor(Math.random() * anu.length)]
+                    let msg = await bluz.sendMessage(m.chat, { audio: { url: result.link_song }, mimetype: 'audio/mpeg' }, { quoted: m })
+                    bluz.sendText(m.chat, `Lagu Tersebut Adalah Lagu dari?\n\nArtist : ${result.artist}\nWaktu : 60s`, msg).then(() => {
+                    tebaklagu[m.sender.split('@')[0]] = result.jawaban.toLowerCase()
+                    })
+                    await sleep(60000)
+                    if (tebaklagu.hasOwnProperty(m.sender.split('@')[0])) {
+                    console.log("Jawaban: " + result.jawaban)
+                    bluz.sendButtonText(m.chat, [{ buttonId: 'tebak lagu', buttonText: { displayText: 'Tebak Lagu' }, type: 1 }], `Waktu Habis\nJawaban:  ${tebaklagu[m.sender.split('@')[0]]}\n\nIngin bermain? tekan button dibawah`, bluz.user.name, m)
+                    delete tebaklagu[m.sender.split('@')[0]]
+                    }
+                } else if (args[0] === 'gambar') {
+                    if (tebakgambar.hasOwnProperty(m.sender.split('@')[0])) throw "Masih Ada Sesi Yang Belum Diselesaikan!"
+                    let anu = await fetchJson('https://raw.githubusercontent.com/BochilTeam/database/master/games/tebakgambar.json')
+                    let result = anu[Math.floor(Math.random() * anu.length)]
+                    bluz.sendImage(m.chat, result.img, `Silahkan Jawab Soal Di Atas Ini\n\nDeskripsi : ${result.deskripsi}\nWaktu : 60s`, m).then(() => {
+                    tebakgambar[m.sender.split('@')[0]] = result.jawaban.toLowerCase()
+                    })
+                    await sleep(60000)
+                    if (tebakgambar.hasOwnProperty(m.sender.split('@')[0])) {
+                    console.log("Jawaban: " + result.jawaban)
+                    bluz.sendButtonText(m.chat, [{ buttonId: 'tebak gambar', buttonText: { displayText: 'Tebak Gambar' }, type: 1 }], `Waktu Habis\nJawaban:  ${tebakgambar[m.sender.split('@')[0]]}\n\nIngin bermain? tekan button dibawah`, bluz.user.name, m)
+                    delete tebakgambar[m.sender.split('@')[0]]
+                    }
+                } else if (args[0] === 'kata') {
+                    if (tebakkata.hasOwnProperty(m.sender.split('@')[0])) throw "Masih Ada Sesi Yang Belum Diselesaikan!"
+                    let anu = await fetchJson('https://raw.githubusercontent.com/BochilTeam/database/master/games/tebakkata.json')
+                    let result = anu[Math.floor(Math.random() * anu.length)]
+                    bluz.sendText(m.chat, `Silahkan Jawab Pertanyaan Berikut\n\n${result.soal}\nWaktu : 60s`, m).then(() => {
+                    tebakkata[m.sender.split('@')[0]] = result.jawaban.toLowerCase()
+                    })
+                    await sleep(60000)
+                    if (tebakkata.hasOwnProperty(m.sender.split('@')[0])) {
+                    console.log("Jawaban: " + result.jawaban)
+                    bluz.sendButtonText(m.chat, [{ buttonId: 'tebak kata', buttonText: { displayText: 'Tebak Kata' }, type: 1 }], `Waktu Habis\nJawaban:  ${tebakkata[m.sender.split('@')[0]]}\n\nIngin bermain? tekan button dibawah`, bluz.user.name, m)
+                    delete tebakkata[m.sender.split('@')[0]]
+                    }
+                } else if (args[0] === 'kalimat') {
+                    if (tebakkalimat.hasOwnProperty(m.sender.split('@')[0])) throw "Masih Ada Sesi Yang Belum Diselesaikan!"
+                    let anu = await fetchJson('https://raw.githubusercontent.com/BochilTeam/database/master/games/tebakkalimat.json')
+                    let result = anu[Math.floor(Math.random() * anu.length)]
+                    bluz.sendText(m.chat, `Silahkan Jawab Pertanyaan Berikut\n\n${result.soal}\nWaktu : 60s`, m).then(() => {
+                    tebakkalimat[m.sender.split('@')[0]] = result.jawaban.toLowerCase()
+                    })
+                    await sleep(60000)
+                    if (tebakkalimat.hasOwnProperty(m.sender.split('@')[0])) {
+                    console.log("Jawaban: " + result.jawaban)
+                    bluz.sendButtonText(m.chat, [{ buttonId: 'tebak kalimat', buttonText: { displayText: 'Tebak Kalimat' }, type: 1 }], `Waktu Habis\nJawaban:  ${tebakkalimat[m.sender.split('@')[0]]}\n\nIngin bermain? tekan button dibawah`, bluz.user.name, m)
+                    delete tebakkalimat[m.sender.split('@')[0]]
+                    }
+                } else if (args[0] === 'lirik') {
+                    if (tebaklirik.hasOwnProperty(m.sender.split('@')[0])) throw "Masih Ada Sesi Yang Belum Diselesaikan!"
+                    let anu = await fetchJson('https://raw.githubusercontent.com/BochilTeam/database/master/games/tebaklirik.json')
+                    let result = anu[Math.floor(Math.random() * anu.length)]
+                    bluz.sendText(m.chat, `Ini Adalah Lirik Dari Lagu? : *${result.soal}*?\nWaktu : 60s`, m).then(() => {
+                    tebaklirik[m.sender.split('@')[0]] = result.jawaban.toLowerCase()
+                    })
+                    await sleep(60000)
+                    if (tebaklirik.hasOwnProperty(m.sender.split('@')[0])) {
+                    console.log("Jawaban: " + result.jawaban)
+                    bluz.sendButtonText(m.chat, [{ buttonId: 'tebak lirik', buttonText: { displayText: 'Tebak Lirik' }, type: 1 }], `Waktu Habis\nJawaban:  ${tebaklirik[m.sender.split('@')[0]]}\n\nIngin bermain? tekan button dibawah`, bluz.user.name, m)
+                    delete tebaklirik[m.sender.split('@')[0]]
+                    }
+                } else if (args[0] === 'lontong') {
+                    if (caklontong.hasOwnProperty(m.sender.split('@')[0])) throw "Masih Ada Sesi Yang Belum Diselesaikan!"
+                    let anu = await fetchJson('https://raw.githubusercontent.com/BochilTeam/database/master/games/caklontong.json')
+                    let result = anu[Math.floor(Math.random() * anu.length)]
+                    bluz.sendText(m.chat, `*Jawablah Pertanyaan Berikut :*\n${result.soal}*\nWaktu : 60s`, m).then(() => {
+                    caklontong[m.sender.split('@')[0]] = result.jawaban.toLowerCase()
+		    caklontong_desk[m.sender.split('@')[0]] = result.deskripsi
+                    })
+                    await sleep(60000)
+                    if (caklontong.hasOwnProperty(m.sender.split('@')[0])) {
+                    console.log("Jawaban: " + result.jawaban)
+                    bluz.sendButtonText(m.chat, [{ buttonId: 'tebak lontong', buttonText: { displayText: 'Tebak Lontong' }, type: 1 }], `Waktu Habis\nJawaban:  ${caklontong[m.sender.split('@')[0]]}\nDeskripsi : ${caklontong_desk[m.sender.split('@')[0]]}\n\nIngin bermain? tekan button dibawah`, bluz.user.name, m)
+                    delete caklontong[m.sender.split('@')[0]]
+		    delete caklontong_desk[m.sender.split('@')[0]]
+                    }
+                }
+            }
+            break
+            case 'kuismath': case 'math': {
+                if (kuismath.hasOwnProperty(m.sender.split('@')[0])) throw "Masih Ada Sesi Yang Belum Diselesaikan!"
+                let { genMath, modes } = require('./src/math')
+                if (!text) throw `Mode: ${Object.keys(modes).join(' | ')}\nContoh penggunaan: ${prefix}math medium`
+                let result = await genMath(text.toLowerCase())
+                bluz.sendText(m.chat, `*Berapa hasil dari: ${result.soal.toLowerCase()}*?\n\nWaktu: ${(result.waktu / 1000).toFixed(2)} detik`, m).then(() => {
+                    kuismath[m.sender.split('@')[0]] = result.jawaban
+                })
+                await sleep(result.waktu)
+                if (kuismath.hasOwnProperty(m.sender.split('@')[0])) {
+                    console.log("Jawaban: " + result.jawaban)
+                    m.reply("Waktu Habis\nJawaban: " + kuismath[m.sender.split('@')[0]])
+                    delete kuismath[m.sender.split('@')[0]]
+                }
+            }
+            break
+            //[================================< CASE GRUP >==========================]
+            case 'add': {
+                if (!m.isGroup) throw mess.group
+                if (!isBotAdmins) throw mess.botAdmin
+                if (!isAdmins) throw mess.admin
+                let users = m.mentionedJid[0] ? m.mentionedJid : m.quoted ? [m.quoted.sender] : [text.replace(/[^0-9]/g, '')+'@s.whatsapp.net']
+                await bluz.groupParticipantsUpdate(m.chat, users, 'add').then((res) => m.reply(jsonformat(res))).catch((err) => m.reply(jsonformat(err)))
+            }
+            break
+            case 'kick': {
+                if (!m.isGroup) throw mess.group
+                if (!isBotAdmins) throw mess.botAdmin
+                if (!isAdmins) throw mess.admin
+                let users = m.mentionedJid[0] ? m.mentionedJid : m.quoted ? [m.quoted.sender] : [text.replace(/[^0-9]/g, '')+'@s.whatsapp.net']
+                await bluz.groupParticipantsUpdate(m.chat, users, 'remove').then((res) => m.reply(jsonformat(res))).catch((err) => m.reply(jsonformat(err)))
+            }
+            break    
+            case 'afk': {
+                let user = global.db.data.users[m.sender]
+                user.afkTime = + new Date
+                user.afkReason = text
+                m.reply(`${m.pushName} Telah Afk${text ? ': ' + text : ''}`)
+            }
+            break
+            case 'antilink': {
+                if (!m.isGroup) throw mess.group
+                if (!isBotAdmins) throw mess.botAdmin
+                if (!isAdmins) throw mess.admin
+                if (args[0] === "on") {
+                if (db.data.chats[m.chat].antilink) return m.reply(`Sudah Aktif Sebelumnya`)
+                db.data.chats[m.chat].antilink = true
+                m.reply(`Antilink Aktif !`)
+                } else if (args[0] === "off") {
+                if (!db.data.chats[m.chat].antilink) return m.reply(`Sudah Tidak Aktif Sebelumnya`)
+                db.data.chats[m.chat].antilink = false
+                m.reply(`Antilink Tidak Aktif !`)
+                } else {
+                 let buttons = [
+                        { buttonId: 'antilink on', buttonText: { displayText: 'On' }, type: 1 },
+                        { buttonId: 'antilink off', buttonText: { displayText: 'Off' }, type: 1 }
+                    ]
+                    await bluz.sendButtonText(m.chat, buttons, `Mode Antilink`, bluz.user.name, m)
+                }
+             }
+             break	
+            case 'demote': {
+                if (!m.isGroup) throw mess.group
+                if (!isBotAdmins) throw mess.botAdmin
+                if (!isAdmins) throw mess.admin
+                let users = m.mentionedJid[0] ? m.mentionedJid : m.quoted ? [m.quoted.sender] : [text.replace(/[^0-9]/g, '')+'@s.whatsapp.net']
+                await bluz.groupParticipantsUpdate(m.chat, users, 'demote').then((res) => m.reply(jsonformat(res))).catch((err) => m.reply(jsonformat(err)))
+            }
+            break
+            case 'promote': {
+                if (!m.isGroup) throw mess.group
+                if (!isBotAdmins) throw mess.botAdmin
+                if (!isAdmins) throw mess.admin
+                let users = m.mentionedJid[0] ? m.mentionedJid : m.quoted ? [m.quoted.sender] : [text.replace(/[^0-9]/g, '')+'@s.whatsapp.net']
+                await bluz.groupParticipantsUpdate(m.chat, users, 'promote').then((res) => m.reply(jsonformat(res))).catch((err) => m.reply(jsonformat(err)))
+            }
+            break
+            case 'editinfo': {
+                if (!m.isGroup) throw mess.group
+                if (!isBotAdmins) throw mess.botAdmin
+                if (!isAdmins) throw mess.admin
+             if (args[0] === 'open'){
+                await bluz.groupSettingUpdate(m.chat, 'unlocked').then((res) => m.reply(`Sukses Membuka Edit Info Group`)).catch((err) => m.reply(jsonformat(err)))
+             } else if (args[0] === 'close'){
+                await bluz.groupSettingUpdate(m.chat, 'locked').then((res) => m.reply(`Sukses Menutup Edit Info Group`)).catch((err) => m.reply(jsonformat(err)))
+             } else {
+             let buttons = [
+                        { buttonId: 'editinfo open', buttonText: { displayText: 'Open' }, type: 1 },
+                        { buttonId: 'editinfo close', buttonText: { displayText: 'Close' }, type: 1 }
+                    ]
+                    await bluz.sendButtonText(m.chat, buttons, `Mode Edit Info`, bluz.user.name, m)
+
+            }
+            }
+            break
+            case 'group': case 'grup': {
+                if (!m.isGroup) throw mess.group
+                if (!isBotAdmins) throw mess.botAdmin
+                if (!isAdmins) throw mess.admin
+                if (args[0] === 'close'){
+                    await bluz.groupSettingUpdate(m.chat, 'announcement').then((res) => m.reply(`Sukses Menutup Group`)).catch((err) => m.reply(jsonformat(err)))
+                } else if (args[0] === 'open'){
+                    await bluz.groupSettingUpdate(m.chat, 'not_announcement').then((res) => m.reply(`Sukses Membuka Group`)).catch((err) => m.reply(jsonformat(err)))
+                } else {
                 let buttons = [
-                    {buttonId: `ytmp3 ${anu.url}`, buttonText: {displayText: '♫ Audio'}, type: 1},
-                    {buttonId: `ytmp4 ${anu.url}`, buttonText: {displayText: '► Video'}, type: 1}
-                ]
-                let buttonMessage = {
-                    image: { url: anu.thumbnail },
-                    caption: `
-⭔ Title : ${anu.title}
-⭔ Ext : Search
-⭔ ID : ${anu.videoId}
-⭔ Duration : ${anu.timestamp}
-⭔ Viewers : ${anu.views}
-⭔ Upload At : ${anu.ago}
-⭔ Author : ${anu.author.name}
-⭔ Channel : ${anu.author.url}
-⭔ Description : ${anu.description}
-⭔ Url : ${anu.url}`,
-                    footer: bluz.user.name,
-                    buttons: buttons,
-                    headerType: 4
+                        { buttonId: 'group open', buttonText: { displayText: 'Open' }, type: 1 },
+                        { buttonId: 'group close', buttonText: { displayText: 'Close' }, type: 1 }
+                    ]
+                    await bluz.sendButtonText(m.chat, buttons, `Mode Group`, bluz.user.name, m)
+
+             }
+            }
+            break
+            case 'hidetag': {
+                if (!m.isGroup) throw mess.group
+                if (!isBotAdmins) throw mess.botAdmin
+                if (!isAdmins) throw mess.admin
+                bluz.sendMessage(m.chat, { text : q ? q : '' , mentions: participants.map(a => a.id)}, { quoted: m })
                 }
-                bluz.sendMessage(m.chat, buttonMessage, { quoted: m })
+                break
+                case 'tagall': {
+                    if (!m.isGroup) throw mess.group
+                    if (!isBotAdmins) throw mess.botAdmin
+                    if (!isAdmins) throw mess.admin
+    let teks = `══✪〘 *👥 Tag All* 〙✪══
+     
+     ➲ *Pesan : ${q ? q : 'kosong'}*\n\n`
+                    for (let mem of participants) {
+                    teks += `⭔ @${mem.id.split('@')[0]}\n`
+                    }
+                    bluz.sendMessage(m.chat, { text: teks, mentions: participants.map(a => a.id) }, { quoted: m })
+                    }
+                    break
+                   case 'totag': {
+                   if (!m.isGroup) throw mess.group
+                   if (!isBotAdmins) throw mess.botAdmin
+                   if (!isAdmins) throw mess.admin
+                   if (!m.quoted) throw `Reply pesan dengan caption ${prefix + command}`
+                   bluz.sendMessage(m.chat, { forward: m.quoted.fakeObj, mentions: participants.map(a => a.id) })
+                   }
+                   break
+	    case 'setname': case 'setsubject': {
+                if (!m.isGroup) throw mess.group
+                if (!isBotAdmins) throw mess.botAdmin
+                if (!isAdmins) throw mess.admin
+                if (!text) throw 'Text ?'
+                await bluz.groupUpdateSubject(m.chat, text).then((res) => m.reply(mess.success)).catch((err) => m.reply(jsonformat(err)))
             }
             break
-	    case 'ytmp3': case 'ytaudio': {
-                let { yta } = require('./lib/y2mate')
-                if (!text) throw `Example : ${prefix + command} https://youtube.com/watch?v=PtFMh6Tccag%27 128kbps`
-                let quality = args[1] ? args[1] : '128kbps'
-                let media = await yta(text, quality)
-                if (media.filesize >= 100000) return m.reply('File Melebihi Batas '+util.format(media))
-                bluz.sendImage(m.chat, media.thumb, `⭔ Title : ${media.title}\n⭔ File Size : ${media.filesizeF}\n⭔ Url : ${isUrl(text)}\n⭔ Ext : MP3\n⭔ Resolusi : ${args[1] || '128kbps'}`, m)
-                bluz.sendMessage(m.chat, { audio: { url: media.dl_link }, mimetype: 'audio/mpeg', fileName: `${media.title}.mp3` }, { quoted: m })
+          case 'setdesc': case 'setdesk': {
+                if (!m.isGroup) throw mess.group
+                if (!isBotAdmins) throw mess.botAdmin
+                if (!isAdmins) throw mess.admin
+                if (!text) throw 'Text ?'
+                await bluz.groupUpdateDescription(m.chat, text).then((res) => m.reply(mess.success)).catch((err) => m.reply(jsonformat(err)))
             }
             break
-            case 'ytmp4': case 'ytvideo': {
-                let { ytv } = require('./lib/y2mate')
-                if (!text) throw `Example : ${prefix + command} https://youtube.com/watch?v=PtFMh6Tccag%27 360p`
-                let quality = args[1] ? args[1] : '360p'
-                let media = await ytv(text, quality)
-                if (media.filesize >= 100000) return m.reply('File Melebihi Batas '+util.format(media))
-                bluz.sendMessage(m.chat, { video: { url: media.dl_link }, mimetype: 'video/mp4', fileName: `${media.title}.mp4`, caption: `⭔ Title : ${media.title}\n⭔ File Size : ${media.filesizeF}\n⭔ Url : ${isUrl(text)}\n⭔ Ext : MP3\n⭔ Resolusi : ${args[1] || '360p'}` }, { quoted: m })
+           case 'setppgroup': case 'setppgrup': case 'setppgc': {
+                if (!m.isGroup) throw mess.group
+                if (!isAdmins) throw mess.admin
+                if (!/image/.test(mime)) throw `Kirim/Reply Image Dengan Caption ${prefix + command}`
+                if (/webp/.test(mime)) throw `Kirim/Reply Image Dengan Caption ${prefix + command}`
+                let media = await bluz.downloadAndSaveMediaMessage(qmsg)
+                await bluz.updateProfilePicture(m.chat, { url: media }).catch((err) => fs.unlinkSync(media))
+                m.reply(mess.success)
+                }
+                break
+            //[================================< CASE RANDOM >==========================]
+            case 'addmsg': {
+                if (!m.quoted) throw 'Reply Message Yang Ingin Disave Di Database'
+                if (!text) throw `Example : ${prefix + command} nama file`
+                let msgs = global.db.data.database
+                if (text.toLowerCase() in msgs) throw `'${text}' telah terdaftar di list pesan`
+                msgs[text.toLowerCase()] = quoted.fakeObj
+m.reply(`Berhasil menambahkan pesan di list pesan sebagai '${text}'
+    
+Akses dengan ${prefix}getmsg ${text}
+
+Lihat list Pesan Dengan ${prefix}listmsg`)
             }
             break
-	    case 'getmusic': {
-                let { yta } = require('./lib/y2mate')
-                if (!text) throw `Example : ${prefix + command} 1`
-                if (!m.quoted) return m.reply('Reply Pesan')
-                if (!m.quoted.isBaileys) throw `Hanya Bisa Membalas Pesan Dari Bot`
-		let urls = quoted.text.match(new RegExp(/(?:https?:\/\/)?(?:youtu\.be\/|(?:www\.|m\.)?youtube\.com\/(?:watch|v|embed|shorts)(?:\.php)?(?:\?.*v=|\/))([a-zA-Z0-9\_-]+)/, 'gi'))
-                if (!urls) throw `Mungkin pesan yang anda reply tidak mengandung result ytsearch`
-                let quality = args[1] ? args[1] : '128kbps'
-                let media = await yta(urls[text - 1], quality)
-                if (media.filesize >= 100000) return m.reply('File Melebihi Batas '+util.format(media))
-                bluz.sendImage(m.chat, media.thumb, `⭔ Title : ${media.title}\n⭔ File Size : ${media.filesizeF}\n⭔ Url : ${urls[text - 1]}\n⭔ Ext : MP3\n⭔ Resolusi : ${args[1] || '128kbps'}`, m)
-                bluz.sendMessage(m.chat, { audio: { url: media.dl_link }, mimetype: 'audio/mpeg', fileName: `${media.title}.mp3` }, { quoted: m })
+        case 'getmsg': {
+                if (!text) throw `Example : ${prefix + command} file name\n\nLihat list pesan dengan ${prefix}listmsg`
+                let msgs = global.db.data.database
+                if (!(text.toLowerCase() in msgs)) throw `'${text}' tidak terdaftar di list pesan`
+                bluz.copyNForward(m.chat, msgs[text.toLowerCase()], true)
             }
             break
-            case 'getvideo': {
-                let { ytv } = require('./lib/y2mate')
-                if (!text) throw `Example : ${prefix + command} 1`
-                if (!m.quoted) return m.reply('Reply Pesan')
-                if (!m.quoted.isBaileys) throw `Hanya Bisa Membalas Pesan Dari Bot`
-                let urls = quoted.text.match(new RegExp(/(?:https?:\/\/)?(?:youtu\.be\/|(?:www\.|m\.)?youtube\.com\/(?:watch|v|embed|shorts)(?:\.php)?(?:\?.*v=|\/))([a-zA-Z0-9\_-]+)/, 'gi'))
-                if (!urls) throw `Mungkin pesan yang anda reply tidak mengandung result ytsearch`
-                let quality = args[1] ? args[1] : '360p'
-                let media = await ytv(urls[text - 1], quality)
-                if (media.filesize >= 100000) return m.reply('File Melebihi Batas '+util.format(media))
-                bluz.sendMessage(m.chat, { video: { url: media.dl_link }, mimetype: 'video/mp4', fileName: `${media.title}.mp4`, caption: `⭔ Title : ${media.title}\n⭔ File Size : ${media.filesizeF}\n⭔ Url : ${urls[text - 1]}\n⭔ Ext : MP3\n⭔ Resolusi : ${args[1] || '360p'}` }, { quoted: m })
+        case 'listmsg': {
+            let msgs = JSON.parse(fs.readFileSync('./src/database.json'))
+	        let seplit = Object.entries(global.db.data.database).map(([nama, isi]) => { return { nama, ...isi } })
+		    let teks = '「 LIST DATABASE 」\n\n'
+		    for (let i of seplit) {
+		    teks += `⬡ *Name :* ${i.nama}\n⬡ *Type :* ${getContentType(i.message).replace(/Message/i, '')}\n────────────────────────\n\n`
+	        }
+	        m.reply(teks)
+	    }
+	    break
+            case 'delmsg': case 'deletemsg': {
+	        let msgs = global.db.data.database
+	        if (!(text.toLowerCase() in msgs)) return m.reply(`'${text}' tidak terdaftar didalam list pesan`)
+		    delete msgs[text.toLowerCase()]
+		    m.reply(`Berhasil menghapus '${text}' dari list pesan`)
             }
-            break
-            case 'pinterest': {
-                m.reply(mess.wait)
-		let { pinterest } = require('./lib/scraper')
-                anu = await pinterest(text)
-                result = anu[Math.floor(Math.random() * anu.length)]
-                bluz.sendMessage(m.chat, { image: { url: result }, caption: '⭔ Media Url : '+result }, { quoted: m })
-            }
-            break
-            case 'anime': case 'waifu': case 'husbu': case 'neko': case 'shinobu': case 'megumin': case 'waifus': case 'nekos': case 'trap': case 'blowjob': {
-                m.reply(mess.wait)
-                bluz.sendMessage(m.chat, { image: { url: api('zenz', '/api/random/'+command, {}, 'apikey') }, caption: 'Generate Random ' + command }, { quoted: m })
-            }
-            break
-	    case 'couple': {
+	    break
+	    case 'ppcouple': case 'ppcp': {
                 m.reply(mess.wait)
                 let anu = await fetchJson('https://raw.githubusercontent.com/iamriz7/kopel_/main/kopel.json')
                 let random = anu[Math.floor(Math.random() * anu.length)]
@@ -1832,6 +1792,335 @@ break
                 bluz.sendMessage(m.chat, buttonMessage, { quoted: m })
             }
             break
+            case 'quotesanime': case 'quoteanime': {
+                let { quotesAnime } = require('./lib/scraper')
+                        let anu = await quotesAnime()
+                        result = anu[Math.floor(Math.random() * anu.length)]
+                        let buttons = [
+                            {buttonId: `quotesanime`, buttonText: {displayText: 'Next'}, type: 1}
+                        ]
+                        let buttonMessage = {
+                            text: `~_${result.quotes}_\n\nBy '${result.karakter}', ${result.anime}\n\n- ${result.up_at}`,
+                            footer: 'Press The Button Below',
+                            buttons: buttons,
+                            headerType: 2
+                        }
+                        bluz.sendMessage(m.chat, buttonMessage, { quoted: m })
+                    }
+                    break
+            //[================================< CASE SEARCH >==========================]
+            case 'google': {
+                if (!isPremium && global.db.data.users[m.sender].limit < 1) return m.reply(mess.endLimit) // respon ketika limit habis
+                db.data.users[m.sender].limit -= 1 // -1 limit
+                    if (!text) throw `Example : ${prefix + command} Bluz Tekno`
+                    let google = require('google-it')
+                    google({'query': text}).then(res => {
+                    let teks = `Google Search From : ${text}\n\n`
+                    for (let g of res) {
+                    teks += `⭔ *Title* : ${g.title}\n`
+                    teks += `⭔ *Description* : ${g.snippet}\n`
+                    teks += `⭔ *Link* : ${g.link}\n\n────────────────────────\n\n`
+                    } 
+                    m.reply(teks)
+                    })
+                }
+                break
+            case 'gimage': case 'googleimage':{
+                if (!isPremium && global.db.data.users[m.sender].limit < 1) return m.reply(mess.endLimit) // respon ketika limit habis
+                db.data.users[m.sender].limit -= 1 // -1 limit
+                    if (!text) throw `Example : ${prefix + command} kaori cicak`
+                    let gis = require('g-i-s')
+                    gis(text, async (error, result) => {
+                    n = result
+                    images = n[Math.floor(Math.random() * n.length)].url
+                    let buttons = [
+                        {buttonId: `gimage ${text}`, buttonText: {displayText: 'Next Image'}, type: 1}
+                                  ]
+                    let buttonMessage = {
+                        image: { url: images },
+                        caption: `*-------「 GIMAGE SEARCH 」-------*
+    🤠 *Query* : ${text}
+    🔗 *Media Url* : ${images}`,
+                        footer: bluz.user.name,
+                        buttons: buttons,
+                        headerType: 4
+                    }
+                    bluz.sendMessage(m.chat, buttonMessage, { quoted: m })
+            })
+                }
+                break
+            case 'pinterest': {
+                if (!isPremium && global.db.data.users[m.sender].limit < 1) return m.reply(mess.endLimit) // respon ketika limit habis
+                db.data.users[m.sender].limit -= 1 // -1 limit
+                    m.reply(mess.wait)
+            let { pinterest } = require('./lib/scraper')
+                    anu = await pinterest(text)
+                    result = anu[Math.floor(Math.random() * anu.length)]
+                    bluz.sendMessage(m.chat, { image: { url: result }, caption: '⭔ Media Url : '+result }, { quoted: m })
+                }
+                break
+            case 'ssweb':
+                if (!isPremium && global.db.data.users[m.sender].limit < 1) return m.reply(mess.endLimit) // respon ketika limit habis
+                db.data.users[m.sender].limit -= 1 // -1 limit
+                    if (!q) throw (mess.link)
+                    m.reply(mess.wait)
+                    let url2 = args.join(' ')
+                    let datas1 = await getBuffer(`https://fatiharridho.herokuapp.com/api/tools/ssweb?url=${url2}&device=dekstop`)
+                    console.log(datas1)
+                    await bluz.sendMessage(m.chat, { image: datas1 }, m)
+                break
+            case 'sshp':
+                if (!isPremium && global.db.data.users[m.sender].limit < 1) return m.reply(mess.endLimit) // respon ketika limit habis
+                db.data.users[m.sender].limit -= 1 // -1 limit
+                    if (!q) throw (mess.link)
+                    m.reply(mess.wait)
+                    let sshp = args.join(' ')
+                    let reshp = await getBuffer(`https://fatiharridho.herokuapp.com/api/tools/ssweb?url=${sshp}&device=phone`)
+                    console.log(reshp)
+                    await bluz.sendMessage(m.chat, { image: reshp }, m)
+                break
+            case 'sstablet':
+                if (!isPremium && global.db.data.users[m.sender].limit < 1) return m.reply(mess.endLimit) // respon ketika limit habis
+                db.data.users[m.sender].limit -= 1 // -1 limit
+                    if (!q) throw (mess.link)
+                    m.reply(mess.wait)
+                    let sstab = args.join(' ')
+                    let restab = await getBuffer(`https://fatiharridho.herokuapp.com/api/tools/ssweb?url=${sstab}&device=tablet`)
+                    console.log(restab)
+                    await bluz.sendMessage(m.chat, { image: restab }, m)
+                break
+            case 'style': case 'styletext': {
+                if (!isPremium && global.db.data.users[m.sender].limit < 1) return m.reply(mess.endLimit) // respon ketika limit habis
+                db.data.users[m.sender].limit -= 1 // -1 limit
+                    let { styletext } = require('./lib/scraper')
+                    if (!text) throw 'Masukkan Query text!'
+                        let anu = await styletext(text)
+                        let teks = `Srtle Text From ${text}\n\n`
+                        for (let i of anu) {
+                            teks += `⭔ *${i.name}* : ${i.result}\n\n`
+                        }
+                        m.reply(teks)
+                }
+                break
+            case 'wikimedia': {
+                    if (!text) throw 'Masukkan Query Title'
+                    let { wikimedia } = require('./lib/scraper')
+                    anu = await wikimedia(text)
+                    result = anu[Math.floor(Math.random() * anu.length)]
+                    let buttons = [
+                        {buttonId: `wikimedia ${text}`, buttonText: {displayText: 'Next Image'}, type: 1}
+                    ]
+                    let buttonMessage = {
+                        image: { url: result.image },
+                        caption: `⭔ Title : ${result.title}\n⭔ Source : ${result.source}\n⭔ Media Url : ${result.image}`,
+                        footer: bluz.user.name,
+                        buttons: buttons,
+                        headerType: 4
+                    }
+                    bluz.sendMessage(m.chat, buttonMessage, { quoted: m })
+                }
+                break
+        //[================================< CASE STICKER >==========================]
+        case 'attp': case 'ttp': {
+            if (!isPremium && global.db.data.users[m.sender].limit < 1) return m.reply(mess.endLimit) // respon ketika limit habis
+            db.data.users[m.sender].limit -= 1 // -1 limit
+                if (!text) throw `Example : ${prefix + command} text`
+                await bluz.sendMedia(m.chat, `https://xteam.xyz/${command}?file&text=${text}`, 'bluz', 'morou', m, {asSticker: true})
+            }
+            break
+        case 'autosticker':
+        case 'autostiker':
+                //if (isBan) return reply(mess.ban)	 			
+                //if (isBanChat) return reply(mess.banChat)
+                //if (!m.isGroup) return replay(mess.group)
+                //if (!isBotAdmins) return reply(mess.botAdmin)
+                if (!isAdmins && !isCreator) return m.reply(mess.admin)
+                if (args.length < 1) return m.reply('type auto sticker on to enable\ntype auto sticker off to disable')
+                if (args[0]  === 'on'){
+                if (isAutoSticker) return m.reply(`Already activated`)
+                autosticker.push(from)
+                fs.writeFileSync('./database/grup/autosticker.json', JSON.stringify(autosticker))
+                m.reply('autosticker activated')
+                } else if (args[0] === 'off'){
+                let anu = autosticker.indexOf(from)
+                autosticker.splice(anu, 1)
+                fs.writeFileSync('./database/grup/autosticker.json', JSON.stringify(autosticker))
+                m.reply('auto sticker deactivated')
+            }
+            break
+        case 'autostickerpc':
+        case 'autostikerpc':
+                //if (isBan) return reply(mess.ban)	 			
+                //if (isBanChat) return reply(mess.banChat)
+                //if (!m.isGroup) return replay(mess.group)
+                if (args.length < 1) return m.reply('type autosticker on to activate\ntype autosticker off to disable')
+                if (args[0]  === 'on'){
+                if (isAutoStick) return m.reply(`Already activated`)
+                _autostick.push(from)
+                fs.writeFileSync('./database/autostickpc.json', JSON.stringify(autosticker))
+                m.reply('autosticker pc activated')
+                } else if (args[0] === 'disable'){
+                let anu = autosticker.indexOf(from)
+                _autostick.splice(anu, 1)
+                fs.writeFileSync('./database/autostickpc.json', JSON.stringify(autosticker))
+                m.reply('autosticker pc deactivated')
+            }
+            break
+        case 'dogesticker':
+        case 'dogestick':{
+            if (!isPremium && global.db.data.users[m.sender].limit < 1) return m.reply(mess.endLimit) // respon ketika limit habis
+            db.data.users[m.sender].limit -= 1 // -1 limit
+                var ano = await fetchJson('https://raw.githubusercontent.com/rashidsiregar28/data/main/anjing')
+                var wifegerak = ano.split('\n')
+                var wifegerakx = wifegerak[Math.floor(Math.random() * wifegerak.length)]
+                encmedia = await bluz.sendImageAsSticker(from, wifegerakx, m, { packname: global.packname, author: global.author, })
+                await fs.unlinkSync(encmedia)
+                }
+                break
+        case 'emoji': {
+            if (!isPremium && global.db.data.users[m.sender].limit < 1) return m.reply(mess.endLimit) // respon ketika limit habis
+            db.data.users[m.sender].limit -= 1 // -1 limit
+                if (!isPremium && global.db.data.users[m.sender].limit < 3) return m.reply(mess.endLimit) // respon ketika limit habis
+                if (!text) throw `Example : ${prefix + command} 😅`
+                let anu = await fetchJson(`https://tenor.googleapis.com/v2/featured?key=AIzaSyAyimkuYQYF_FXVALexPuGQctUWRURdCYQ&contentfilter=high&media_filter=png_transparent&component=proactive&collection=emoji_kitchen_v5&q=${encodeURIComponent(text)}`)
+                for (let res of anu.results) {
+                let encmedia = await bluz.sendImageAsSticker(m.chat, res.url, m, { packname: global.packname, author: global.author, categories: res.tags })
+                await fs.unlinkSync(encmedia)
+            }
+            }
+            break
+        case 'emojimix': {
+            if (!isPremium && global.db.data.users[m.sender].limit < 1) return m.reply(mess.endLimit) // respon ketika limit habis
+            db.data.users[m.sender].limit -= 1 // -1 limit
+                if (!isPremium && global.db.data.users[m.sender].limit < 3) return m.reply(mess.endLimit) // respon ketika limit habis
+                let [emoji1, emoji2] = text.split`+`
+                if (!emoji1) throw `Example : ${prefix + command} 😅+🤔`
+                if (!emoji2) throw `Example : ${prefix + command} 😅+🤔`
+                let anu = await fetchJson(`https://tenor.googleapis.com/v2/featured?key=AIzaSyAyimkuYQYF_FXVALexPuGQctUWRURdCYQ&contentfilter=high&media_filter=png_transparent&component=proactive&collection=emoji_kitchen_v5&q=${encodeURIComponent(emoji1)}_${encodeURIComponent(emoji2)}`)
+                for (let res of anu.results) {
+                let encmedia = await bluz.sendImageAsSticker(m.chat, res.url, m, { packname: global.packname, author: global.author, categories: res.tags })
+                await fs.unlinkSync(encmedia)
+            }
+            }
+            break
+        case 'gura':
+        case 'gurastick':{
+            if (!isPremium && global.db.data.users[m.sender].limit < 1) return m.reply(mess.endLimit) // respon ketika limit habis
+            db.data.users[m.sender].limit -= 1 // -1 limit
+                var ano = await fetchJson('https://raw.githubusercontent.com/rashidsiregar28/data/main/gura')
+                var wifegerak = ano.split('\n')
+                var wifegerakx = wifegerak[Math.floor(Math.random() * wifegerak.length)]
+                encmedia = await bluz.sendImageAsSticker(from, wifegerakx, m, { packname: global.packname, author: global.author, })
+                await fs.unlinkSync(encmedia)
+                }
+                break
+        case 'lovesticker':
+        case 'lovestick' :{
+            if (!isPremium && global.db.data.users[m.sender].limit < 1) return m.reply(mess.endLimit) // respon ketika limit habis
+            db.data.users[m.sender].limit -= 1 // -1 limit
+                var ano = await fetchJson('https://raw.githubusercontent.com/rashidsiregar28/data/main/bucin')
+                var wifegerak = ano.split('\n')
+                var wifegerakx = wifegerak[Math.floor(Math.random() * wifegerak.length)]
+                encmedia = await bluz.sendImageAsSticker(from, wifegerakx, m, { packname: global.packname, author: global.author, })
+                await fs.unlinkSync(encmedia)
+                }
+                break
+        case 'patrick':
+        case 'patricksticker': {
+            if (!isPremium && global.db.data.users[m.sender].limit < 1) return m.reply(mess.endLimit) // respon ketika limit habis
+            db.data.users[m.sender].limit -= 1 // -1 limit
+                var ano = await fetchJson('https://raw.githubusercontent.com/rashidsiregar28/data/main/patrik')
+                var wifegerak = ano.split('\n')
+                var wifegerakx = wifegerak[Math.floor(Math.random() * wifegerak.length)]
+                encmedia = await bluz.sendImageAsSticker(from, wifegerakx, m, { packname: global.packname, author: global.author, })
+                await fs.unlinkSync(encmedia)
+                }
+                break
+        case 'smeme': case 'stickmeme': case 'stikmeme': case 'stickermeme': case 'stikermeme': {
+            if (!isPremium && global.db.data.users[m.sender].limit < 1) return m.reply(mess.endLimit) // respon ketika limit habis
+            db.data.users[m.sender].limit -= 1 // -1 limit
+                let respond = `Kirim/reply image/sticker dengan caption ${prefix + command} text1|text2`
+                if (!/image/.test(mime)) throw respond
+                if (!text) throw respond
+                m.reply(mess.wait)
+                atas = text.split('|')[0] ? text.split('|')[0] : '-'
+                bawah = text.split('|')[1] ? text.split('|')[1] : '-'
+                let dwnld = await bluz.downloadMediaMessage(qmsg)
+                let { floNime } = require('./lib/uploader')
+                let fatGans = await floNime(dwnld)
+                let smeme = `https://api.memegen.link/images/custom/${encodeURIComponent(atas)}/${encodeURIComponent(bawah)}.png?background=${fatGans.result.url}`
+                let FaTiH = await bluz.sendImageAsSticker(m.chat, smeme, m, { packname: global.packname, author: global.auhor })
+                await fs.unlinkSync(FaTiH)
+            }
+            break
+        case 'sticker': case 's': case 'stickergif': case 'sgif': {
+                if (/image/.test(mime)) {
+                m.reply(mess.wait)
+                let media = await bluz.downloadMediaMessage(qmsg)
+                let encmedia = await bluz.sendImageAsSticker(m.chat, media, m, { packname: global.packname, author: global.author })
+                await fs.unlinkSync(encmedia)
+                } else if (/video/.test(mime)) {
+                m.reply(mess.wait)
+                if (qmsg.seconds > 11) return m.reply('Maksimal 10 detik!')
+                let media = await bluz.downloadMediaMessage(qmsg)
+                let encmedia = await bluz.sendVideoAsSticker(m.chat, media, m, { packname: global.packname, author: global.author })
+                await fs.unlinkSync(encmedia)
+            } else {
+                m.reply(`Kirim/reply gambar/video/gif dengan caption ${prefix + command}\nDurasi Video/Gif 1-9 Detik`)
+                   }
+            }
+            break
+        case 'stickerwm': case 'swm': case 'stickergifwm': case 'sgifwm': {
+            if (!isPremium && global.db.data.users[m.sender].limit < 1) return m.reply(mess.endLimit) // respon ketika limit habis
+            db.data.users[m.sender].limit -= 2 // -1 limit
+                let [teks1, teks2] = text.split`|`
+                if (!teks1) throw `Kirim/reply image/video dengan caption ${prefix + command} teks1|teks2`
+                if (!teks2) throw `Kirim/reply image/video dengan caption ${prefix + command} teks1|teks2`
+            	m.reply(mess.wait)
+                if (/image/.test(mime)) {
+                let media = await bluz.downloadMediaMessage(qmsg)
+                let encmedia = await bluz.sendImageAsSticker(m.chat, media, m, { packname: teks1, author: teks2 })
+                await fs.unlinkSync(encmedia)
+                } else if (/video/.test(mime)) {
+                if ((quoted.msg || quoted).seconds > 11) return m.reply('Maksimal 10 detik!')
+                let media = await bluz.downloadMediaMessage(qmsg)
+                let encmedia = await bluz.sendVideoAsSticker(m.chat, media, m, { packname: teks1, author: teks2 })
+                await fs.unlinkSync(encmedia)
+            } else {
+                throw `Kirim Gambar/Video Dengan Caption ${prefix + command}\nDurasi Video 1-9 Detik`
+                   }
+            }
+            break
+        case 'snobg': {
+            if (!isPremium && global.db.data.users[m.sender].limit < 1) return m.reply(mess.endLimit) // respon ketika limit habis
+            db.data.users[m.sender].limit -= 3 // -1 limit
+                let { TelegraPh } = require('./lib/uploader')
+                m.reply(mess.wait)
+                mee = await bluz.downloadAndSaveMediaMessage(quoted)
+                mem = await TelegraPh(mee)
+                meme = `https://api.lolhuman.xyz/api/removebg?apikey=@nc0kb4j1n64n&img=${mem}`
+                memek = await bluz.sendImageAsSticker(m.chat, meme, m, { packname: global.packname, author: global.author })
+                await fs.unlinkSync(memek)
+            }
+            break
+        case 'lick':case 'kiss':case 'neko':
+            if (!isPremium && global.db.data.users[m.sender].limit < 1) return m.reply(mess.endLimit) // respon ketika limit habis
+            db.data.users[m.sender].limit -= 1 // -1 limit
+                m.reply(mess.wait)
+				axios.get(`https://api.waifu.pics/sfw/${command}`)
+				.then(({data}) => {
+				bluz.sendImageAsSticker(m.chat, data.url, m, { packname: global.packname, author: global.author })
+				})
+			break
+        case 'cry':case 'kill':case 'hug':case 'pat':case 'bite':case 'yeet':case 'bully':case 'bonk':case 'wink':case 'poke':case 'nom':case 'slap':case 'smile':case 'wave':case 'awoo':case 'blush':case 'smug':case 'glomp':case 'happy':case 'dance':case 'cringe':case 'cuddle':case 'highfive':case 'shinobu':case 'megumin':case 'handhold':
+            if (!isPremium && global.db.data.users[m.sender].limit < 1) return m.reply(mess.endLimit) // respon ketika limit habis
+            db.data.users[m.sender].limit -= 1 // -1 limit
+                m.reply(mess.wait)
+                axios.get(`https://api.waifu.pics/sfw/${command}`)
+                .then(({data}) => {
+                bluz.sendImageAsSticker(m.chat, data.url, m, { packname: global.packname, author: global.author })
+                })
+			break
             case 'wallpaper': {
                 if (!text) throw 'Masukkan Query Title'
 		let { wallpaper } = require('./lib/scraper')
@@ -1850,6 +2139,58 @@ break
                 bluz.sendMessage(m.chat, buttonMessage, { quoted: m })
             }
             break
+        case 'google': {
+            if (!isPremium && global.db.data.users[m.sender].limit < 3) return m.reply(mess.endLimit) // respon ketika limit habis
+                if (!text) throw `Example : ${prefix + command} fatih arridho`
+                let google = require('google-it')
+                google({'query': text}).then(res => {
+                let teks = `Google Search From : ${text}\n\n`
+                for (let g of res) {
+                teks += `⭔ *Title* : ${g.title}\n`
+                teks += `⭔ *Description* : ${g.snippet}\n`
+                teks += `⭔ *Link* : ${g.link}\n\n────────────────────────\n\n`
+                } 
+                m.reply(teks)
+                })
+                }
+                break
+        case 'gimage': {
+            if (!isPremium && global.db.data.users[m.sender].limit < 3) return m.reply(mess.endLimit) // respon ketika limit habis
+        if (!text) throw `Example : ${prefix + command} kaori cicak`
+        let gis = require('g-i-s')
+        gis(text, async (error, result) => {
+        n = result
+        images = n[Math.floor(Math.random() * n.length)].url
+        let buttons = [
+                    {buttonId: `gimage ${text}`, buttonText: {displayText: 'Next Image'}, type: 1}
+                ]
+                let buttonMessage = {
+                    image: { url: images },
+                    caption: `*-------「 GIMAGE SEARCH 」-------*
+🤠 *Query* : ${text}
+🔗 *Media Url* : ${images}`,
+                    footer: bluz.user.name,
+                    buttons: buttons,
+                    headerType: 4
+                }
+                bluz.sendMessage(m.chat, buttonMessage, { quoted: m })
+        })
+        }
+        break
+            case 'pinterest': {
+                if (!isPremium && global.db.data.users[m.sender].limit < 1) return m.reply(mess.endLimit) // respon ketika limit habis
+                m.reply(mess.wait)
+		let { pinterest } = require('./lib/scraper')
+                anu = await pinterest(text)
+                result = anu[Math.floor(Math.random() * anu.length)]
+                bluz.sendMessage(m.chat, { image: { url: result }, caption: '⭔ Media Url : '+result }, { quoted: m })
+            }
+            break
+            case 'anime': case 'waifu': case 'husbu': case 'neko': case 'shinobu': case 'megumin': case 'waifus': case 'nekos': case 'trap': case 'blowjob': {
+                m.reply(mess.wait)
+                bluz.sendMessage(m.chat, { image: { url: api('zenz', '/api/random/'+command, {}, 'apikey') }, caption: 'Generate Random ' + command }, { quoted: m })
+            }
+            break
             case 'wikimedia': {
                 if (!text) throw 'Masukkan Query Title'
 		let { wikimedia } = require('./lib/scraper')
@@ -1864,22 +2205,6 @@ break
                     footer: bluz.user.name,
                     buttons: buttons,
                     headerType: 4
-                }
-                bluz.sendMessage(m.chat, buttonMessage, { quoted: m })
-            }
-            break
-            case 'quotesanime': case 'quoteanime': {
-		let { quotesAnime } = require('./lib/scraper')
-                let anu = await quotesAnime()
-                result = anu[Math.floor(Math.random() * anu.length)]
-                let buttons = [
-                    {buttonId: `quotesanime`, buttonText: {displayText: 'Next'}, type: 1}
-                ]
-                let buttonMessage = {
-                    text: `~_${result.quotes}_\n\nBy '${result.karakter}', ${result.anime}\n\n- ${result.up_at}`,
-                    footer: 'Press The Button Below',
-                    buttons: buttons,
-                    headerType: 2
                 }
                 bluz.sendMessage(m.chat, buttonMessage, { quoted: m })
             }
@@ -1914,227 +2239,6 @@ break
                 if (!text) throw 'No Query Text'
                 m.reply(mess.wait)
                 bluz.sendMessage(m.chat, { image: { url: api('zenz', '/ephoto/' + command, { text: text }, 'apikey') }, caption: `Ephoto ${command}` }, { quoted: m })
-            }
-            break
-	    case 'nomerhoki': case 'nomorhoki': {
-                if (!Number(text)) throw `Example : ${prefix + command} 6289696090800`
-                let anu = await primbon.nomer_hoki(Number(text))
-                if (anu.status == false) return m.reply(anu.message)
-                bluz.sendText(m.chat, `⭔ *Nomor HP :* ${anu.message.nomer_hp}\n⭔ *Angka Shuzi :* ${anu.message.angka_shuzi}\n⭔ *Energi Positif :*\n- Kekayaan : ${anu.message.energi_positif.kekayaan}\n- Kesehatan : ${anu.message.energi_positif.kesehatan}\n- Cinta : ${anu.message.energi_positif.cinta}\n- Kestabilan : ${anu.message.energi_positif.kestabilan}\n- Persentase : ${anu.message.energi_positif.persentase}\n⭔ *Energi Negatif :*\n- Perselisihan : ${anu.message.energi_negatif.perselisihan}\n- Kehilangan : ${anu.message.energi_negatif.kehilangan}\n- Malapetaka : ${anu.message.energi_negatif.malapetaka}\n- Kehancuran : ${anu.message.energi_negatif.kehancuran}\n- Persentase : ${anu.message.energi_negatif.persentase}`, m)
-            }
-            break
-            case 'artimimpi': case 'tafsirmimpi': {
-                if (!text) throw `Example : ${prefix + command} belanja`
-                let anu = await primbon.tafsir_mimpi(text)
-                if (anu.status == false) return m.reply(anu.message)
-                bluz.sendText(m.chat, `⭔ *Mimpi :* ${anu.message.mimpi}\n⭔ *Arti :* ${anu.message.arti}\n⭔ *Solusi :* ${anu.message.solusi}`, m)
-            }
-            break
-            case 'ramalanjodoh': case 'ramaljodoh': {
-                if (!text) throw `Example : ${prefix + command} Dika, 7, 7, 2005, Novia, 16, 11, 2004`
-                let [nama1, tgl1, bln1, thn1, nama2, tgl2, bln2, thn2] = text.split`,`
-                let anu = await primbon.ramalan_jodoh(nama1, tgl1, bln1, thn1, nama2, tgl2, bln2, thn2)
-                if (anu.status == false) return m.reply(anu.message)
-                bluz.sendText(m.chat, `⭔ *Nama Anda :* ${anu.message.nama_anda.nama}\n⭔ *Lahir Anda :* ${anu.message.nama_anda.tgl_lahir}\n⭔ *Nama Pasangan :* ${anu.message.nama_pasangan.nama}\n⭔ *Lahir Pasangan :* ${anu.message.nama_pasangan.tgl_lahir}\n⭔ *Hasil :* ${anu.message.result}\n⭔ *Catatan :* ${anu.message.catatan}`, m)
-            }
-            break
-            case 'ramalanjodohbali': case 'ramaljodohbali': {
-                if (!text) throw `Example : ${prefix + command} Dika, 7, 7, 2005, Novia, 16, 11, 2004`
-                let [nama1, tgl1, bln1, thn1, nama2, tgl2, bln2, thn2] = text.split`,`
-                let anu = await primbon.ramalan_jodoh_bali(nama1, tgl1, bln1, thn1, nama2, tgl2, bln2, thn2)
-                if (anu.status == false) return m.reply(anu.message)
-                bluz.sendText(m.chat, `⭔ *Nama Anda :* ${anu.message.nama_anda.nama}\n⭔ *Lahir Anda :* ${anu.message.nama_anda.tgl_lahir}\n⭔ *Nama Pasangan :* ${anu.message.nama_pasangan.nama}\n⭔ *Lahir Pasangan :* ${anu.message.nama_pasangan.tgl_lahir}\n⭔ *Hasil :* ${anu.message.result}\n⭔ *Catatan :* ${anu.message.catatan}`, m)
-            }
-            break
-            case 'suamiistri': {
-                if (!text) throw `Example : ${prefix + command} Dika, 7, 7, 2005, Novia, 16, 11, 2004`
-                let [nama1, tgl1, bln1, thn1, nama2, tgl2, bln2, thn2] = text.split`,`
-                let anu = await primbon.suami_istri(nama1, tgl1, bln1, thn1, nama2, tgl2, bln2, thn2)
-                if (anu.status == false) return m.reply(anu.message)
-                bluz.sendText(m.chat, `⭔ *Nama Suami :* ${anu.message.suami.nama}\n⭔ *Lahir Suami :* ${anu.message.suami.tgl_lahir}\n⭔ *Nama Istri :* ${anu.message.istri.nama}\n⭔ *Lahir Istri :* ${anu.message.istri.tgl_lahir}\n⭔ *Hasil :* ${anu.message.result}\n⭔ *Catatan :* ${anu.message.catatan}`, m)
-            }
-            break
-            case 'ramalancinta': case 'ramalcinta': {
-                if (!text) throw `Example : ${prefix + command} Dika, 7, 7, 2005, Novia, 16, 11, 2004`
-                let [nama1, tgl1, bln1, thn1, nama2, tgl2, bln2, thn2] = text.split`,`
-                let anu = await primbon.ramalan_cinta(nama1, tgl1, bln1, thn1, nama2, tgl2, bln2, thn2)
-                if (anu.status == false) return m.reply(anu.message)
-                bluz.sendText(m.chat, `⭔ *Nama Anda :* ${anu.message.nama_anda.nama}\n⭔ *Lahir Anda :* ${anu.message.nama_anda.tgl_lahir}\n⭔ *Nama Pasangan :* ${anu.message.nama_pasangan.nama}\n⭔ *Lahir Pasangan :* ${anu.message.nama_pasangan.tgl_lahir}\n⭔ *Sisi Positif :* ${anu.message.sisi_positif}\n⭔ *Sisi Negatif :* ${anu.message.sisi_negatif}\n⭔ *Catatan :* ${anu.message.catatan}`, m)
-            }
-            break
-            case 'artinama': {
-                if (!text) throw `Example : ${prefix + command} Dika Ardianta`
-                let anu = await primbon.arti_nama(text)
-                if (anu.status == false) return m.reply(anu.message)
-                bluz.sendText(m.chat, `⭔ *Nama :* ${anu.message.nama}\n⭔ *Arti :* ${anu.message.arti}\n⭔ *Catatan :* ${anu.message.catatan}`, m)
-            }
-            break
-            case 'kecocokannama': case 'cocoknama': {
-                if (!text) throw `Example : ${prefix + command} Dika, 7, 7, 2005`
-                let [nama, tgl, bln, thn] = text.split`,`
-                let anu = await primbon.kecocokan_nama(nama, tgl, bln, thn)
-                if (anu.status == false) return m.reply(anu.message)
-                bluz.sendText(m.chat, `⭔ *Nama :* ${anu.message.nama}\n⭔ *Lahir :* ${anu.message.tgl_lahir}\n⭔ *Life Path :* ${anu.message.life_path}\n⭔ *Destiny :* ${anu.message.destiny}\n⭔ *Destiny Desire :* ${anu.message.destiny_desire}\n⭔ *Personality :* ${anu.message.personality}\n⭔ *Persentase :* ${anu.message.persentase_kecocokan}`, m)
-            }
-            break
-            case 'kecocokanpasangan': case 'cocokpasangan': case 'pasangan': {
-                if (!text) throw `Example : ${prefix + command} Dika|Novia`
-                let [nama1, nama2] = text.split`|`
-                let anu = await primbon.kecocokan_nama_pasangan(nama1, nama2)
-                if (anu.status == false) return m.reply(anu.message)
-                bluz.sendImage(m.chat,  anu.message.gambar, `⭔ *Nama Anda :* ${anu.message.nama_anda}\n⭔ *Nama Pasangan :* ${anu.message.nama_pasangan}\n⭔ *Sisi Positif :* ${anu.message.sisi_positif}\n⭔ *Sisi Negatif :* ${anu.message.sisi_negatif}`, m)
-            }
-            break
-            case 'jadianpernikahan': case 'jadiannikah': {
-                if (!text) throw `Example : ${prefix + command} 6, 12, 2020`
-                let [tgl, bln, thn] = text.split`,`
-                let anu = await primbon.tanggal_jadian_pernikahan(tgl, bln, thn)
-                if (anu.status == false) return m.reply(anu.message)
-                bluz.sendText(m.chat, `⭔ *Tanggal Pernikahan :* ${anu.message.tanggal}\n⭔ *karakteristik :* ${anu.message.karakteristik}`, m)
-            }
-            break
-            case 'sifatusaha': {
-                if (!ext)throw `Example : ${prefix+ command} 28, 12, 2021`
-                let [tgl, bln, thn] = text.split`,`
-                let anu = await primbon.sifat_usaha_bisnis(tgl, bln, thn)
-                if (anu.status == false) return m.reply(anu.message)
-                bluz.sendText(m.chat, `⭔ *Lahir :* ${anu.message.hari_lahir}\n⭔ *Usaha :* ${anu.message.usaha}`, m)
-            }
-            break
-            case 'rejeki': case 'rezeki': {
-                if (!text) throw `Example : ${prefix + command} 7, 7, 2005`
-                let [tgl, bln, thn] = text.split`,`
-                let anu = await primbon.rejeki_hoki_weton(tgl, bln, thn)
-                if (anu.status == false) return m.reply(anu.message)
-                bluz.sendText(m.chat, `⭔ *Lahir :* ${anu.message.hari_lahir}\n⭔ *Rezeki :* ${anu.message.rejeki}\n⭔ *Catatan :* ${anu.message.catatan}`, m)
-            }
-            break
-            case 'pekerjaan': case 'kerja': {
-                if (!text) throw `Example : ${prefix + command} 7, 7, 2005`
-                let [tgl, bln, thn] = text.split`,`
-                let anu = await primbon.pekerjaan_weton_lahir(tgl, bln, thn)
-                if (anu.status == false) return m.reply(anu.message)
-                bluz.sendText(m.chat, `⭔ *Lahir :* ${anu.message.hari_lahir}\n⭔ *Pekerjaan :* ${anu.message.pekerjaan}\n⭔ *Catatan :* ${anu.message.catatan}`, m)
-            }
-            break
-            case 'ramalannasib': case 'ramalnasib': case 'nasib': {
-                if (!text) throw `Example : 7, 7, 2005`
-                let [tgl, bln, thn] = text.split`,`
-                let anu = await primbon.ramalan_nasib(tgl, bln, thn)
-                if (anu.status == false) return m.reply(anu.message)
-                bluz.sendText(m.chat, `⭔ *Analisa :* ${anu.message.analisa}\n⭔ *Angka Akar :* ${anu.message.angka_akar}\n⭔ *Sifat :* ${anu.message.sifat}\n⭔ *Elemen :* ${anu.message.elemen}\n⭔ *Angka Keberuntungan :* ${anu.message.angka_keberuntungan}`, m)
-            }
-            break
-            case 'potensipenyakit': case 'penyakit': {
-                if (!text) throw `Example : ${prefix + command} 7, 7, 2005`
-                let [tgl, bln, thn] = text.split`,`
-                let anu = await primbon.cek_potensi_penyakit(tgl, bln, thn)
-                if (anu.status == false) return m.reply(anu.message)
-                bluz.sendText(m.chat, `⭔ *Analisa :* ${anu.message.analisa}\n⭔ *Sektor :* ${anu.message.sektor}\n⭔ *Elemen :* ${anu.message.elemen}\n⭔ *Catatan :* ${anu.message.catatan}`, m)
-            }
-            break
-            case 'artitarot': case 'tarot': {
-                if (!text) throw `Example : ${prefix + command} 7, 7, 2005`
-                let [tgl, bln, thn] = text.split`,`
-                let anu = await primbon.arti_kartu_tarot(tgl, bln, thn)
-                if (anu.status == false) return m.reply(anu.message)
-                bluz.sendImage(m.chat, anu.message.image, `⭔ *Lahir :* ${anu.message.tgl_lahir}\n⭔ *Simbol Tarot :* ${anu.message.simbol_tarot}\n⭔ *Arti :* ${anu.message.arti}\n⭔ *Catatan :* ${anu.message.catatan}`, m)
-            }
-            break
-            case 'fengshui': {
-                if (!text) throw `Example : ${prefix + command} Dika, 1, 2005\n\nNote : ${prefix + command} Nama, gender, tahun lahir\nGender : 1 untuk laki-laki & 2 untuk perempuan`
-                let [nama, gender, tahun] = text.split`,`
-                let anu = await primbon.perhitungan_feng_shui(nama, gender, tahun)
-                if (anu.status == false) return m.reply(anu.message)
-                bluz.sendText(m.chat, `⭔ *Nama :* ${anu.message.nama}\n⭔ *Lahir :* ${anu.message.tahun_lahir}\n⭔ *Gender :* ${anu.message.jenis_kelamin}\n⭔ *Angka Kua :* ${anu.message.angka_kua}\n⭔ *Kelompok :* ${anu.message.kelompok}\n⭔ *Karakter :* ${anu.message.karakter}\n⭔ *Sektor Baik :* ${anu.message.sektor_baik}\n⭔ *Sektor Buruk :* ${anu.message.sektor_buruk}`, m)
-            }
-            break
-            case 'haribaik': {
-                if (!text) throw `Example : ${prefix + command} 7, 7, 2005`
-                let [tgl, bln, thn] = text.split`,`
-                let anu = await primbon.petung_hari_baik(tgl, bln, thn)
-                if (anu.status == false) return m.reply(anu.message)
-                bluz.sendText(m.chat, `⭔ *Lahir :* ${anu.message.tgl_lahir}\n⭔ *Kala Tinantang :* ${anu.message.kala_tinantang}\n⭔ *Info :* ${anu.message.info}\n⭔ *Catatan :* ${anu.message.catatan}`, m)
-            }
-            break
-            case 'harisangar': case 'taliwangke': {
-                if (!text) throw `Example : ${prefix + command} 7, 7, 2005`
-                let [tgl, bln, thn] = text.split`,`
-                let anu = await primbon.hari_sangar_taliwangke(tgl, bln, thn)
-                if (anu.status == false) return m.reply(anu.message)
-                bluz.sendText(m.chat, `⭔ *Lahir :* ${anu.message.tgl_lahir}\n⭔ *Hasil :* ${anu.message.result}\n⭔ *Info :* ${anu.message.info}\n⭔ *Catatan :* ${anu.message.catatan}`, m)
-            }
-            break
-            case 'harinaas': case 'harisial': {
-                if (!text) throw `Example : ${prefix + command} 7, 7, 2005`
-                let [tgl, bln, thn] = text.split`,`
-                let anu = await primbon.primbon_hari_naas(tgl, bln, thn)
-                if (anu.status == false) return m.reply(anu.message)
-                bluz.sendText(m.chat, `⭔ *Hari Lahir :* ${anu.message.hari_lahir}\n⭔ *Tanggal Lahir :* ${anu.message.tgl_lahir}\n⭔ *Hari Naas :* ${anu.message.hari_naas}\n⭔ *Info :* ${anu.message.catatan}\n⭔ *Catatan :* ${anu.message.info}`, m)
-            }
-            break
-            case 'nagahari': case 'harinaga': {
-                if (!text) throw `Example : ${prefix + command} 7, 7, 2005`
-                let [tgl, bln, thn] = text.split`,`
-                let anu = await primbon.rahasia_naga_hari(tgl, bln, thn)
-                if (anu.status == false) return m.reply(anu.message)
-                bluz.sendText(m.chat, `⭔ *Hari Lahir :* ${anu.message.hari_lahir}\n⭔ *Tanggal Lahir :* ${anu.message.tgl_lahir}\n⭔ *Arah Naga Hari :* ${anu.message.arah_naga_hari}\n⭔ *Catatan :* ${anu.message.catatan}`, m)
-            }
-            break
-            case 'arahrejeki': case 'arahrezeki': {
-                if (!text) throw `Example : ${prefix + command} 7, 7, 2005`
-                let [tgl, bln, thn] = text.split`,`
-                let anu = await primbon.primbon_arah_rejeki(tgl, bln, thn)
-                if (anu.status == false) return m.reply(anu.message)
-                bluz.sendText(m.chat, `⭔ *Hari Lahir :* ${anu.message.hari_lahir}\n⭔ *tanggal Lahir :* ${anu.message.tgl_lahir}\n⭔ *Arah Rezeki :* ${anu.message.arah_rejeki}\n⭔ *Catatan :* ${anu.message.catatan}`, m)
-            }
-            break
-            case 'peruntungan': {
-                if (!text) throw `Example : ${prefix + command} DIka, 7, 7, 2005, 2022\n\nNote : ${prefix + command} Nama, tanggal lahir, bulan lahir, tahun lahir, untuk tahun`
-                let [nama, tgl, bln, thn, untuk] = text.split`,`
-                let anu = await primbon.ramalan_peruntungan(nama, tgl, bln, thn, untuk)
-                if (anu.status == false) return m.reply(anu.message)
-                bluz.sendText(m.chat, `⭔ *Nama :* ${anu.message.nama}\n⭔ *Lahir :* ${anu.message.tgl_lahir}\n⭔ *Peruntungan Tahun :* ${anu.message.peruntungan_tahun}\n⭔ *Hasil :* ${anu.message.result}\n⭔ *Catatan :* ${anu.message.catatan}`, m)
-            }
-            break
-            case 'weton': case 'wetonjawa': {
-                if (!text) throw `Example : ${prefix + command} 7, 7, 2005`
-                let [tgl, bln, thn] = text.split`,`
-                let anu = await primbon.weton_jawa(tgl, bln, thn)
-                if (anu.status == false) return m.reply(anu.message)
-                bluz.sendText(m.chat, `⭔ *Tanggal :* ${anu.message.tanggal}\n⭔ *Jumlah Neptu :* ${anu.message.jumlah_neptu}\n⭔ *Watak Hari :* ${anu.message.watak_hari}\n⭔ *Naga Hari :* ${anu.message.naga_hari}\n⭔ *Jam Baik :* ${anu.message.jam_baik}\n⭔ *Watak Kelahiran :* ${anu.message.watak_kelahiran}`, m)
-            }
-            break
-            case 'sifat': case 'karakter': {
-                if (!text) throw `Example : ${prefix + command} Dika, 7, 7, 2005`
-                let [nama, tgl, bln, thn] = text.split`,`
-                let anu = await primbon.sifat_karakter_tanggal_lahir(nama, tgl, bln, thn)
-                if (anu.status == false) return m.reply(anu.message)
-                bluz.sendText(m.chat, `⭔ *Nama :* ${anu.message.nama}\n⭔ *Lahir :* ${anu.message.tgl_lahir}\n⭔ *Garis Hidup :* ${anu.message.garis_hidup}`, m)
-            }
-            break
-            case 'keberuntungan': {
-                if (!text) throw `Example : ${prefix + command} Dika, 7, 7, 2005`
-                let [nama, tgl, bln, thn] = text.split`,`
-                let anu = await primbon.potensi_keberuntungan(nama, tgl, bln, thn)
-                if (anu.status == false) return m.reply(anu.message)
-                bluz.sendText(m.chat, `⭔ *Nama :* ${anu.message.nama}\n⭔ *Lahir :* ${anu.message.tgl_lahir}\n⭔ *Hasil :* ${anu.message.result}`, m)
-            }
-            break
-            case 'memancing': {
-                if (!text) throw `Example : ${prefix + command} 12, 1, 2022`
-                let [tgl, bln, thn] = text.split`,`
-                let anu = await primbon.primbon_memancing_ikan(tgl, bln, thn)
-                if (anu.status == false) return m.reply(anu.message)
-                bluz.sendText(m.chat, `⭔ *Tanggal :* ${anu.message.tgl_memancing}\n⭔ *Hasil :* ${anu.message.result}\n⭔ *Catatan :* ${anu.message.catatan}`, m)
-            }
-            break
-            case 'masasubur': {
-                if (!text) throw `Example : ${prefix + command} 12, 1, 2022, 28\n\nNote : ${prefix + command} hari pertama menstruasi, siklus`
-                let [tgl, bln, thn, siklus] = text.split`,`
-                let anu = await primbon.masa_subur(tgl, bln, thn, siklus)
-                if (anu.status == false) return m.reply(anu.message)
-                bluz.sendText(m.chat, `⭔ *Hasil :* ${anu.message.result}\n⭔ *Catatan :* ${anu.message.catatan}`, m)
             }
             break
             case 'zodiak': case 'zodiac': {
@@ -2229,60 +2333,6 @@ break
                 } else {
                     m.reply(`Example : ${prefix +command} type id\n\nList Type :\n1. ff (Free Fire)\n2. ml (Mobile Legends)\n3. aov (Arena Of Valor)\n4. cod (Call Of Duty)\n5. pb (point Blank)\n6. ig (Instagram)\n7. npm (https://npmjs.com)`)
                 }
-            }
-            break
-	        case 'tiktok': case 'tiktoknowm': {
-                if (!text) throw 'Masukkan Query Link!'
-                m.reply(mess.wait)
-                let anu = await fetchJson(api('zenz', '/downloader/tiktok', { url: text }, 'apikey'))
-                let buttons = [
-                    {buttonId: `tiktokwm ${text}`, buttonText: {displayText: '► With Watermark'}, type: 1},
-                    {buttonId: `tiktokmp3 ${text}`, buttonText: {displayText: '♫ Audio'}, type: 1}
-                ]
-                let buttonMessage = {
-                    video: { url: anu.result.nowatermark },
-                    caption: `Download From ${text}`,
-                    footer: 'Press The Button Below',
-                    buttons: buttons,
-                    headerType: 5
-                }
-                bluz.sendMessage(m.chat, buttonMessage, { quoted: m })
-            }
-            break
-            case 'tiktokwm': case 'tiktokwatermark': {
-                if (!text) throw 'Masukkan Query Link!'
-                m.reply(mess.wait)
-                let anu = await fetchJson(api('zenz', '/downloader/tiktok', { url: text }, 'apikey'))
-                let buttons = [
-                    {buttonId: `tiktoknowm ${text}`, buttonText: {displayText: '► No Watermark'}, type: 1},
-                    {buttonId: `tiktokmp3 ${text}`, buttonText: {displayText: '♫ Audio'}, type: 1}
-                ]
-                let buttonMessage = {
-                    video: { url: anu.result.watermark },
-                    caption: `Download From ${text}`,
-                    footer: 'Press The Button Below',
-                    buttons: buttons,
-                    headerType: 5
-                }
-                bluz.sendMessage(m.chat, buttonMessage, { quoted: m })
-            }
-            break
-            case 'tiktokmp3': case 'tiktokaudio': {
-                if (!text) throw 'Masukkan Query Link!'
-                m.reply(mess.wait)
-                let anu = await fetchJson(api('zenz', '/downloader/musically', { url: text }, 'apikey'))
-                let buttons = [
-                    {buttonId: `tiktoknowm ${text}`, buttonText: {displayText: '► No Watermark'}, type: 1},
-                    {buttonId: `tiktokwm ${text}`, buttonText: {displayText: '► With Watermark'}, type: 1}
-                ]
-                let buttonMessage = {
-                    text: `Download From ${text}`,
-                    footer: 'Press The Button Below',
-                    buttons: buttons,
-                    headerType: 2
-                }
-                let msg = await bluz.sendMessage(m.chat, buttonMessage, { quoted: m })
-                bluz.sendMessage(m.chat, { audio: { url: anu.result.audio }, mimetype: 'audio/mpeg'}, { quoted: msg })
             }
             break
 	        case 'instagram': case 'ig': case 'igdl': {
@@ -2504,86 +2554,7 @@ ${id}`)
                 m.reply(e)
                 }
                 break
-            case 'setcmd': {
-                if (!m.quoted) throw 'Reply Pesan!'
-                if (!m.quoted.fileSha256) throw 'SHA256 Hash Missing'
-                if (!text) throw `Untuk Command Apa?`
-                let hash = m.quoted.fileSha256.toString('base64')
-                if (global.db.data.sticker[hash] && global.db.data.sticker[hash].locked) throw 'You have no permission to change this sticker command'
-                global.db.data.sticker[hash] = {
-                    text,
-                    mentionedJid: m.mentionedJid,
-                    creator: m.sender,
-                    at: + new Date,
-                    locked: false,
-                }
-                m.reply(`Done!`)
-            }
-            break
-            case 'delcmd': {
-                let hash = m.quoted.fileSha256.toString('base64')
-                if (!hash) throw `Tidak ada hash`
-                if (global.db.data.sticker[hash] && global.db.data.sticker[hash].locked) throw 'You have no permission to delete this sticker command'              
-                delete global.db.data.sticker[hash]
-                m.reply(`Done!`)
-            }
-            break
-            case 'listcmd': {
-                let teks = `
-*List Hash*
-Info: *bold* hash is Locked
-${Object.entries(global.db.data.sticker).map(([key, value], index) => `${index + 1}. ${value.locked ? `*${key}*` : key} : ${value.text}`).join('\n')}
-`.trim()
-                bluz.sendText(m.chat, teks, m, { mentions: Object.values(global.db.data.sticker).map(x => x.mentionedJid).reduce((a,b) => [...a, ...b], []) })
-            }
-            break
-            case 'lockcmd': {
-                if (!isCreator) throw mess.owner
-                if (!m.quoted) throw 'Reply Pesan!'
-                if (!m.quoted.fileSha256) throw 'SHA256 Hash Missing'
-                let hash = m.quoted.fileSha256.toString('base64')
-                if (!(hash in global.db.data.sticker)) throw 'Hash not found in database'
-                global.db.data.sticker[hash].locked = !/^un/i.test(command)
-                m.reply('Done!')
-            }
-            break
-            case 'addmsg': {
-                if (!m.quoted) throw 'Reply Message Yang Ingin Disave Di Database'
-                if (!text) throw `Example : ${prefix + command} nama file`
-                let msgs = global.db.data.database
-                if (text.toLowerCase() in msgs) throw `'${text}' telah terdaftar di list pesan`
-                msgs[text.toLowerCase()] = quoted.fakeObj
-m.reply(`Berhasil menambahkan pesan di list pesan sebagai '${text}'
-    
-Akses dengan ${prefix}getmsg ${text}
-
-Lihat list Pesan Dengan ${prefix}listmsg`)
-            }
-            break
-            case 'getmsg': {
-                if (!text) throw `Example : ${prefix + command} file name\n\nLihat list pesan dengan ${prefix}listmsg`
-                let msgs = global.db.data.database
-                if (!(text.toLowerCase() in msgs)) throw `'${text}' tidak terdaftar di list pesan`
-                bluz.copyNForward(m.chat, msgs[text.toLowerCase()], true)
-            }
-            break
-            case 'listmsg': {
-                let msgs = JSON.parse(fs.readFileSync('./src/database.json'))
-	        let seplit = Object.entries(global.db.data.database).map(([nama, isi]) => { return { nama, ...isi } })
-		let teks = '「 LIST DATABASE 」\n\n'
-		for (let i of seplit) {
-		    teks += `⬡ *Name :* ${i.nama}\n⬡ *Type :* ${getContentType(i.message).replace(/Message/i, '')}\n────────────────────────\n\n`
-	        }
-	        m.reply(teks)
-	    }
-	    break
-            case 'delmsg': case 'deletemsg': {
-	        let msgs = global.db.data.database
-	        if (!(text.toLowerCase() in msgs)) return m.reply(`'${text}' tidak terdaftar didalam list pesan`)
-		delete msgs[text.toLowerCase()]
-		m.reply(`Berhasil menghapus '${text}' dari list pesan`)
-            }
-	    break
+            //[================================< CASE ANONYMOUS >==========================]
 	    case 'anonymous': {
                 if (m.isGroup) return m.reply('Fitur Tidak Dapat Digunakan Untuk Group!')
 				let buttons = [
@@ -2692,17 +2663,24 @@ Lihat list Pesan Dengan ${prefix}listmsg`)
                 }
                 break
             }
-            case 'public': {
-                if (!isCreator) throw mess.owner
-                bluz.public = true
-                m.reply('Sukse Change To Public Usage')
+        case 'kirim': case 'menfess': {
+            if (!isPremium && global.db.data.users[m.sender].limit < 1) return m.reply(mess.endLimit) // respon ketika limit habis
+            db.data.users[m.sender].limit -= 1 // -1 limit
+                if (!args.join(" ")) return m.reply(`Example :\n${prefix + command} Inisial|62NoTujuan|IsiPesan`)
+                const cpes = args.join(" ")
+                const nama = cpes.split("|")[0];
+                const nony = cpes.split("|")[1];
+                const pesny = cpes.split("|")[2];
+                lolh = `
+*| CHAT |*
+
+Message from Anonymous
+Pengirim : *${nama}*
+Message : ${pesny}
+`
+                bluz.sendMessage(nony + "@s.whatsapp.net", {text:lolh, mentions:[m.sender]}, {quoted:m})
             }
-            break
-            case 'self': {
-                if (!isCreator) throw mess.owner
-                bluz.public = false
-                m.reply('Sukses Change To Self Usage')
-            }
+                await m.reply("Success")
             break
             case 'ping': case 'botstatus': case 'statusbot': {
                 const used = process.memoryUsage()
@@ -2751,23 +2729,179 @@ ${cpus.map((cpu, i) => `${i + 1}. ${cpu.model.trim()} (${cpu.speed} MHZ)\n${Obje
                 m.reply(respon)
             }
             break
-            case 'speedtest': {
-            m.reply('Testing Speed...')
-            let cp = require('child_process')
-            let { promisify } = require('util')
-            let exec = promisify(cp.exec).bind(cp)
-          let o
-          try {
-          o = await exec('python speed.py')
-          } catch (e) {
-          o = e
-         } finally {
-        let { stdout, stderr } = o
-        if (stdout.trim()) m.reply(stdout)
-        if (stderr.trim()) m.reply(stderr)
-            }
+            //[================================< CASE OWNER >==========================]
+            case 'antiviewonce': case 'antionce':
+                //if (isBan) return reply(mess.ban)
+//if (isBanChat) return reply(mess.banChat)
+if (!m.key.fromMe && !isCreator) return m.reply(mess.owner)
+if (args[0] === "on") {
+if (global.db.data.chats[m.chat].antionce) return m.reply(`Already activated`)
+global.db.data.chats[m.chat].antionce = true
+m.reply(`${command} Successfully Activated !`)
+} else if (args[0] === "off") {
+if (!global.db.data.chats[m.chat].antionce) return m.reply(`Already deactivated`)
+global.db.data.chats[m.chat].antionce = false
+m.reply(`${command} Successfully Deactivated !`)
+} else {
+let buttonsntilink = [
+{ buttonId: `${command} on`, buttonText: { displayText: 'On' }, type: 1 },
+{ buttonId: `${command} off`, buttonText: { displayText: 'Off' }, type: 1 }
+]
+await bluz.sendButtonText(m.chat, buttonsntilink, `Please click the button below\n\nOn to enable\nOff to disable`, `${global.botname}`, m)
+}
+break
+            case 'block': {
+                if (!isCreator) throw mess.owner
+                let users = m.mentionedJid[0] ? m.mentionedJid[0] : m.quoted ? m.quoted.sender : text.replace(/[^0-9]/g, '')+'@s.whatsapp.net'
+                await bluz.updateBlockStatus(users, 'block').then((res) => m.reply(jsonformat(res))).catch((err) => m.reply(jsonformat(err)))
             }
             break
+            case 'unblock': {
+                if (!isCreator) throw mess.owner
+                let users = m.mentionedJid[0] ? m.mentionedJid[0] : m.quoted ? m.quoted.sender : text.replace(/[^0-9]/g, '')+'@s.whatsapp.net'
+                await bluz.updateBlockStatus(users, 'unblock').then((res) => m.reply(jsonformat(res))).catch((err) => m.reply(jsonformat(err)))
+            }
+            break
+            case 'pesanbug': {
+                //if (isBan) return reply(mess.ban)	 			
+                //if (isBanChat) return reply(mess.banChat)
+                //Number : @${m.sender.split("@")[0]}
+                if (!isCreator) return m.reply(mess.owner)
+                if (!args.join(" ")) return reply(`Example :\n${prefix + command} 628916909xxxxxx|Hi`)
+                const cpes = args.join(" ")
+                const nony = cpes.split("|")[0];
+                const pesny = cpes.split("|")[1];
+                lolh = `
+*| CHAT |*
+
+Message from owner of bot
+Number : Privat
+Message : *${pesny}*
+
+Untuk Membalas pesan dari owner ketik: 
+Report min ytmp3nya error`
+                bluz.sendMessage(nony + "@s.whatsapp.net", {text:lolh, mentions:[m.sender]}, {quoted:m})
+            }
+                await m.reply("Success")
+            break
+            case 'report': {
+                m.reply('#report min ignya error')
+                //if (isBan) return reply(mess.ban)	 			
+                //if (isBanChat) return reply(mess.banChat)
+                if (!args.join(" ")) return m.reply(`Example : \n- ${prefix + command} min ytmp4nya error\n- ${prefix + command} hey dev this user is spamming`)
+                teks = `*| REPORT |*`
+                teks1 = `\n\nNumber : @${m.sender.split("@")[0]}\nReport : ${args.join(" ")}`
+                teks2 = `\n\nSuccessfully sent to owner`
+                teks3 = `\n\nuntuk membalas bug report kamu cukup ketik #pesanbug 628|nanti kita fix ignya`
+                for (let i of owner) {
+                bluz.sendMessage(i + "@s.whatsapp.net", {text: teks + teks1 + teks3, mentions:[m.sender]}, {quoted:m})
+                }
+                bluz.sendMessage(m.chat, {text: teks + teks2 + teks1, mentions:[m.sender]}, {quoted:m})
+             }
+             break
+            case 'public': {
+                if (!isCreator) throw mess.owner
+                bluz.public = true
+                m.reply('Sukse Change To Public Usage')
+            }
+            break
+            case 'self': {
+                if (!isCreator) throw mess.owner
+                bluz.public = false
+                m.reply('Sukses Change To Self Usage')
+            }
+            break
+            case 'setcmd': {
+                if (!m.quoted) throw 'Reply Pesan!'
+                if (!m.quoted.fileSha256) throw 'SHA256 Hash Missing'
+                if (!text) throw `Untuk Command Apa?`
+                let hash = m.quoted.fileSha256.toString('base64')
+                if (global.db.data.sticker[hash] && global.db.data.sticker[hash].locked) throw 'You have no permission to change this sticker command'
+                global.db.data.sticker[hash] = {
+                    text,
+                    mentionedJid: m.mentionedJid,
+                    creator: m.sender,
+                    at: + new Date,
+                    locked: false,
+                }
+                m.reply(`Done!`)
+            }
+            break
+            case 'delcmd': {
+                let hash = m.quoted.fileSha256.toString('base64')
+                if (!hash) throw `Tidak ada hash`
+                if (global.db.data.sticker[hash] && global.db.data.sticker[hash].locked) throw 'You have no permission to delete this sticker command'              
+                delete global.db.data.sticker[hash]
+                m.reply(`Done!`)
+            }
+            break
+            case 'listcmd': {
+                let teks = `
+*List Hash*
+Info: *bold* hash is Locked
+${Object.entries(global.db.data.sticker).map(([key, value], index) => `${index + 1}. ${value.locked ? `*${key}*` : key} : ${value.text}`).join('\n')}
+`.trim()
+                bluz.sendText(m.chat, teks, m, { mentions: Object.values(global.db.data.sticker).map(x => x.mentionedJid).reduce((a,b) => [...a, ...b], []) })
+            }
+            break
+            case 'lockcmd': {
+                if (!isCreator) throw mess.owner
+                if (!m.quoted) throw 'Reply Pesan!'
+                if (!m.quoted.fileSha256) throw 'SHA256 Hash Missing'
+                let hash = m.quoted.fileSha256.toString('base64')
+                if (!(hash in global.db.data.sticker)) throw 'Hash not found in database'
+                global.db.data.sticker[hash].locked = !/^un/i.test(command)
+                m.reply('Done!')
+            }
+            break
+            case 'setexif': {
+                if (!isCreator) throw mess.owner
+                if (!text) throw `Example : ${prefix + command} packname|author`
+                global.packname = text.split("|")[0]
+                global.author = text.split("|")[1]
+                m.reply(`Exif berhasil diubah menjadi\n\n⭔ Packname : ${global.packname}\n⭔ Author : ${global.author}`)
+            }
+            break
+            case 'setppbot': {
+                if (!isCreator) throw mess.owner
+                if (!/image/.test(mime)) throw `Kirim/Reply Image Dengan Caption ${prefix + command}`
+                if (/webp/.test(mime)) throw `Kirim/Reply Image Dengan Caption ${prefix + command}`
+                let media = await bluz.downloadAndSaveMediaMessage(qmsg)
+                await bluz.updateProfilePicture(botNumber, { url: media }).catch((err) => fs.unlinkSync(media))
+                m.reply(mess.success)
+            }
+            break
+            case 'join': {
+                if (!isCreator) throw mess.owner
+                if (!text) throw 'Masukkan Link Group!'
+                if (!isUrl(args[0]) && !args[0].includes('whatsapp.com')) throw 'Link Invalid!'
+                m.reply(mess.wait)
+                let result = args[0].split('https://chat.whatsapp.com/')[1]
+                await bluz.groupAcceptInvite(result).then((res) => m.reply(jsonformat(res))).catch((err) => m.reply(jsonformat(err)))
+            }
+            break
+            case 'leave': {
+                if (!isCreator) throw mess.owner
+                await bluz.groupLeave(m.chat).then((res) => m.reply(jsonformat(res))).catch((err) => m.reply(jsonformat(err)))
+            }
+            break
+            case 'speedtest': {
+                m.reply('Testing Speed...')
+                let cp = require('child_process')
+                let { promisify } = require('util')
+                let exec = promisify(cp.exec).bind(cp)
+              let o
+              try {
+              o = await exec('python speed.py')
+              } catch (e) {
+              o = e
+             } finally {
+            let { stdout, stderr } = o
+            if (stdout.trim()) m.reply(stdout)
+            if (stderr.trim()) m.reply(stderr)
+                }
+                }
+                break
             case 'owner': case 'creator': {
                 bluz.sendContact(m.chat, global.owner, m)
             }
@@ -2787,9 +2921,10 @@ ${cpus.map((cpu, i) => `${i + 1}. ${cpu.model.trim()} (${cpu.speed} MHZ)\n${Obje
             break
             case 'gsmarena': {
             if (!text) throw `Example : ${prefix + command} samsung`
-            let res = await fetchJson(api('zenz', '/webzone/gsmarena', { query: text }, 'apikey'))
-            let { judul, rilis, thumb, ukuran, type, storage, display, inchi, pixel, videoPixel, ram, chipset, batrai, merek_batre, detail } = res.result
-let capt = `⭔ Title: ${judul}
+            let res = await fetchJson(`https://api.lolhuman.xyz/api/gsmarena?apikey=@nc0kb4j1n64n&query=${text}`)
+            console.log(res)
+            let { phone_name, rilis, phone_image, ukuran, type, storage, display, inchi, pixel, videoPixel, ram, chipset, batrai, merek_batre, detail } = res.result
+let capt = `⭔ Title: ${phone_name}
 ⭔ Realease: ${rilis}
 ⭔ Size: ${ukuran}
 ⭔ Type: ${type}
@@ -2803,7 +2938,7 @@ let capt = `⭔ Title: ${judul}
 ⭔ Battery: ${batrai}
 ⭔ Battery Brand: ${merek_batre}
 ⭔ Detail: ${detail}`
-            bluz.sendImage(m.chat, thumb, capt, m)
+            bluz.sendImage(m.chat, phone_image, capt, m)
             }
             break
             case 'jadwalbioskop': {
@@ -2942,43 +3077,53 @@ let capt = `⭔ Title: ${judul}
             }
             break
     case 'allmenu':
-var unicorn = await getBuffer(`https://textpro.me/images/user_image/2022/08/63005beb90022.jpg`)
+var unicorn = await getBuffer(`https://i.ibb.co/GtNJC11/Text-Pro-me-16302fb3b7f3df.jpg`)
 await bluz.send5ButLoc(from, `` + '' + lang.allmenu(botname, pushname, ucapanWaktu, prefix, runtime), `BluzBot © Informasi s.id/bluzbot`,unicorn, [{"urlButton": {"displayText": "📍 GropBot","url": `https://chat.whatsapp.com/D8JYK5tBRmBIfkqXD1W9ly`}},{"urlButton": {"displayText": "🔖 Informasi","url": `https://s.id/bluzbot`}},{"quickReplyButton": {"displayText": "📑 Menu","id": 'menu'}},
 {"quickReplyButton": {"displayText": "⚠️ Rules","id": 'rules'}},{"quickReplyButton": {"displayText": "🗳 Bug Report","id": 'report'}}] )
 break
 case 'convertmenu':
-var unicorn = await getBuffer(`https://textpro.me/images/user_image/2022/08/63005bfe6a2ba.jpg`)
+var unicorn = await getBuffer(`https://i.ibb.co/Wgpqrsv/Text-Pro-me-16302fddf797ad.jpg`)
 await bluz.send5ButLoc(from, `` + '' + lang.convertmenu(prefix), `BluzBot © Informasi s.id/bluzbot`,unicorn, [{"urlButton": {"displayText": "📍 GropBot","url": `https://chat.whatsapp.com/D8JYK5tBRmBIfkqXD1W9ly`}},{"urlButton": {"displayText": "🔖 Informasi","url": `https://s.id/bluzbot`}},{"quickReplyButton": {"displayText": "📑 Menu","id": 'menu'}},
 {"quickReplyButton": {"displayText": "⚠️ Rules","id": 'rules'}},{"quickReplyButton": {"displayText": "🗳 Bug Report","id": 'report'}}] )
 break
 case 'downloadmenu':
-var unicorn = await getBuffer(`https://textpro.me/images/user_image/2022/08/63005e2726dd0.jpg`)
+var unicorn = await getBuffer(`https://i.ibb.co/NrghnsT/Text-Pro-me-16302fe1c9165e.jpg`)
 await bluz.send5ButLoc(from, `` + '' + lang.downloadmenu(prefix), `BluzBot © Informasi s.id/bluzbot`,unicorn, [{"urlButton": {"displayText": "📍 GropBot","url": `https://chat.whatsapp.com/D8JYK5tBRmBIfkqXD1W9ly`}},{"urlButton": {"displayText": "🔖 Informasi","url": `https://s.id/bluzbot`}},{"quickReplyButton": {"displayText": "📑 Menu","id": 'menu'}},
 {"quickReplyButton": {"displayText": "⚠️ Rules","id": 'rules'}},{"quickReplyButton": {"displayText": "🗳 Bug Report","id": 'report'}}] )
 break
+case 'gamemenu':
+var unicorn = await getBuffer(`https://i.ibb.co/6PXYhQP/Text-Pro-me-163033fc4b1934.jpg`)
+await bluz.send5ButLoc(from, `` + '' + lang.gamemenu(prefix), `BluzBot © Informasi s.id/bluzbot`,unicorn, [{"urlButton": {"displayText": "📍 GropBot","url": `https://chat.whatsapp.com/D8JYK5tBRmBIfkqXD1W9ly`}},{"urlButton": {"displayText": "🔖 Informasi","url": `https://s.id/bluzbot`}},{"quickReplyButton": {"displayText": "📑 Menu","id": 'menu'}},
+{"quickReplyButton": {"displayText": "⚠️ Rules","id": 'rules'}},{"quickReplyButton": {"displayText": "🗳 Bug Report","id": 'report'}}] )
+break
 case 'grupmenu':
-var unicorn = await getBuffer(`https://textpro.me/images/user_image/2022/08/63005cd6ce535.jpg`)
+var unicorn = await getBuffer(`https://i.ibb.co/VgxGPW0/Text-Pro-me-16302fd6f15e36.jpg`)
 await bluz.send5ButLoc(from, `` + '' + lang.grupmenu(prefix), `BluzBot © Informasi s.id/bluzbot`,unicorn, [{"urlButton": {"displayText": "📍 GropBot","url": `https://chat.whatsapp.com/D8JYK5tBRmBIfkqXD1W9ly`}},{"urlButton": {"displayText": "🔖 Informasi","url": `https://s.id/bluzbot`}},{"quickReplyButton": {"displayText": "📑 Menu","id": 'menu'}},
 {"quickReplyButton": {"displayText": "⚠️ Rules","id": 'rules'}},{"quickReplyButton": {"displayText": "🗳 Bug Report","id": 'report'}}] )
 break
 case 'randommenu':
-var unicorn = await getBuffer(`https://textpro.me/images/user_image/2022/08/63005eebd571b.jpg`)
+var unicorn = await getBuffer(`https://i.ibb.co/mcvCwwm/Text-Pro-me-1630301075d067.jpg`)
 await bluz.send5ButLoc(from, `` + '' + lang.randommenu(prefix), `BluzBot © Informasi s.id/bluzbot`,unicorn, [{"urlButton": {"displayText": "📍 GropBot","url": `https://chat.whatsapp.com/D8JYK5tBRmBIfkqXD1W9ly`}},{"urlButton": {"displayText": "🔖 Informasi","url": `https://s.id/bluzbot`}},{"quickReplyButton": {"displayText": "📑 Menu","id": 'menu'}},
 {"quickReplyButton": {"displayText": "⚠️ Rules","id": 'rules'}},{"quickReplyButton": {"displayText": "🗳 Bug Report","id": 'report'}}] )
 break
 case 'searchmenu':
-var unicorn = await getBuffer(`https://textpro.me/images/user_image/2022/08/63005de92eab1.jpg`)
+var unicorn = await getBuffer(`https://i.ibb.co/M2dnFzz/Text-Pro-me-16302ffe3012d1.jpg`)
 await bluz.send5ButLoc(from, `` + '' + lang.searchmenu(prefix), `BluzBot © Informasi s.id/bluzbot`,unicorn, [{"urlButton": {"displayText": "📍 GropBot","url": `https://chat.whatsapp.com/D8JYK5tBRmBIfkqXD1W9ly`}},{"urlButton": {"displayText": "🔖 Informasi","url": `https://s.id/bluzbot`}},{"quickReplyButton": {"displayText": "📑 Menu","id": 'menu'}},
 {"quickReplyButton": {"displayText": "⚠️ Rules","id": 'rules'}},{"quickReplyButton": {"displayText": "🗳 Bug Report","id": 'report'}}] )
 break
 case 'stickermenu':
-var unicorn = await getBuffer(`https://textpro.me/images/user_image/2022/08/63005efe5dafe.jpg`)
+var unicorn = await getBuffer(`https://i.ibb.co/M25bx8b/Text-Pro-me-16302fc1ad84ee.jpg`)
 await bluz.send5ButLoc(from, `` + '' + lang.stickermenu(prefix), `BluzBot © Informasi s.id/bluzbot`,unicorn, [{"urlButton": {"displayText": "📍 GropBot","url": `https://chat.whatsapp.com/D8JYK5tBRmBIfkqXD1W9ly`}},{"urlButton": {"displayText": "🔖 Informasi","url": `https://s.id/bluzbot`}},{"quickReplyButton": {"displayText": "📑 Menu","id": 'menu'}},
 {"quickReplyButton": {"displayText": "⚠️ Rules","id": 'rules'}},{"quickReplyButton": {"displayText": "🗳 Bug Report","id": 'report'}}] )
 break
 case 'stickerwibu':
-var unicorn = await getBuffer(`https://textpro.me/images/user_image/2022/08/63005f76023ce.jpg`)
+var unicorn = await getBuffer(`https://i.ibb.co/FYB410G/Text-Pro-me-16303006e276b1.jpg`)
 await bluz.send5ButLoc(from, `` + '' + lang.stickerwibu(prefix), `BluzBot © Informasi s.id/bluzbot`,unicorn, [{"urlButton": {"displayText": "📍 GropBot","url": `https://chat.whatsapp.com/D8JYK5tBRmBIfkqXD1W9ly`}},{"urlButton": {"displayText": "🔖 Informasi","url": `https://s.id/bluzbot`}},{"quickReplyButton": {"displayText": "📑 Menu","id": 'menu'}},
+{"quickReplyButton": {"displayText": "⚠️ Rules","id": 'rules'}},{"quickReplyButton": {"displayText": "🗳 Bug Report","id": 'report'}}] )
+break
+case 'anonymousmenu':
+var unicorn = await getBuffer(`https://i.ibb.co/ZB2SNHz/Text-Pro-me-163033c4169836.jpg`)
+await bluz.send5ButLoc(from, `` + '' + lang.anonymousmenu(prefix), `BluzBot © Informasi s.id/bluzbot`,unicorn, [{"urlButton": {"displayText": "📍 GropBot","url": `https://chat.whatsapp.com/D8JYK5tBRmBIfkqXD1W9ly`}},{"urlButton": {"displayText": "🔖 Informasi","url": `https://s.id/bluzbot`}},{"quickReplyButton": {"displayText": "📑 Menu","id": 'menu'}},
 {"quickReplyButton": {"displayText": "⚠️ Rules","id": 'rules'}},{"quickReplyButton": {"displayText": "🗳 Bug Report","id": 'report'}}] )
 break
 //RULES

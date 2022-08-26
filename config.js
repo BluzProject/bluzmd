@@ -10,6 +10,7 @@ const chalk = require('chalk')
 // Website Api
 global.APIs = {
 	zenz: 'https://zenzapis.xyz',
+    lol: 'https://api.lolhuman.xyz',
 }
 
 // Apikey Website Api
@@ -37,7 +38,7 @@ global.mess = {
     private: 'Fitur Digunakan Hanya Untuk Private Chat!',
     bot: 'Fitur Khusus Pengguna Nomor Bot',
     wait: 'Loading...',
-    endLimit: 'Limit Harian Anda Telah Habis, Limit Akan Direset Setiap Jam 12',
+    endLimit: 'Limit Harian Anda Telah Habis, Limit Akan Direset Setiap Jam 12, Jika ingin limit tanpa batas ketik sewa',
 }
 global.limitawal = {
     premium: "Infinity",
