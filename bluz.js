@@ -2121,11 +2121,14 @@ Lihat list Pesan Dengan ${prefix}listmsg`)
                 bluz.sendImageAsSticker(m.chat, data.url, m, { packname: global.packname, author: global.author })
                 })
 			break
-            case 'anime': case 'waifu': case 'husbu': case 'neko': case 'shinobu': case 'megumin': case 'waifus': case 'nekos': case 'trap': case 'blowjob':
+            case 'anime': case 'waifu': case 'husbu': case 'neko': case 'shinobu': case 'megumin': case 'waifus': case 'nekos': case 'trap':
+                if (!isPremium && global.db.data.users[m.sender].limit < 1) return m.reply(mess.endLimit) // respon ketika limit habis
+                db.data.users[m.sender].limit -= 1 // -1 limit
                 m.reply(mess.wait)
-		axios.get(`https://api.waifu.pics/sfw/${command}`)
+		        axios.get(`https://api.waifu.pics/sfw/${command}`)
                 .then(({data}) => {
-                bluz.sendMessage(m.chat, data.url, m)
+                    bluz.sendMessage(m.chat, { image: { url: data.url }, caption: '⭔ Generate Random : '+ command }, { quoted: m })
+            })
             break
             case 'wallpaper': {
                 if (!text) throw 'Masukkan Query Title'
