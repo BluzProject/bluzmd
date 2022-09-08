@@ -2107,7 +2107,7 @@ Lihat list Pesan Dengan ${prefix}listmsg`)
             if (!isPremium && global.db.data.users[m.sender].limit < 1) return m.reply(mess.endLimit) // respon ketika limit habis
             db.data.users[m.sender].limit -= 1 // -1 limit
                 m.reply(mess.wait)
-				axios.get(`https://api.waifu.pics/sfw/${command}`)
+				axios.get(`https://api.f.pics/sfw/${command}`)
 				.then(({data}) => {
 				bluz.sendImageAsSticker(m.chat, data.url, m, { packname: global.packname, author: global.author })
 				})
@@ -2121,6 +2121,13 @@ Lihat list Pesan Dengan ${prefix}listmsg`)
                 bluz.sendImageAsSticker(m.chat, data.url, m, { packname: global.packname, author: global.author })
                 })
 			break
+            case 'anime': case 'waifu': case 'husbu': case 'neko': case 'shinobu': case 'megumin': case 'waifus': case 'nekos': case 'trap': case 'blowjob': {
+                m.reply(mess.wait)
+		axios.get(`https://api.waifu.pics/sfw/${command}`)
+                .then(({data}) => {
+                bluz.sendMessage(m.chat, data.url, m, caption: 'Generate Random ' + command }, { quoted: m })
+            }
+            break
             case 'wallpaper': {
                 if (!text) throw 'Masukkan Query Title'
 		let { wallpaper } = require('./lib/scraper')
@@ -2184,11 +2191,6 @@ Lihat list Pesan Dengan ${prefix}listmsg`)
                 anu = await pinterest(text)
                 result = anu[Math.floor(Math.random() * anu.length)]
                 bluz.sendMessage(m.chat, { image: { url: result }, caption: '⭔ Media Url : '+result }, { quoted: m })
-            }
-            break
-            case 'anime': case 'waifu': case 'husbu': case 'neko': case 'shinobu': case 'megumin': case 'waifus': case 'nekos': case 'trap': case 'blowjob': {
-                m.reply(mess.wait)
-                bluz.sendMessage(m.chat, { image: { url: api('zenz', '/api/random/'+command, {}, 'apikey') }, caption: 'Generate Random ' + command }, { quoted: m })
             }
             break
             case 'wikimedia': {
