@@ -2125,7 +2125,7 @@ Lihat list Pesan Dengan ${prefix}listmsg`)
                 m.reply(mess.wait)
 		axios.get(`https://api.waifu.pics/sfw/${command}`)
                 .then(({data}) => {
-                bluz.sendMessage(m.chat, data.url, m, caption: 'Generate Random ' + command }, { quoted: m })
+                bluz.sendMessage(m.chat, data.url, m)
             }
             break
             case 'wallpaper': {
