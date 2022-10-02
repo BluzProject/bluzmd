@@ -1441,6 +1441,7 @@ Jika fitur ini error, gunakan ttnowm2
             }).catch(() => m.reply(mess.error.api))
             break
             case 'ttnowm2': {
+		if (!isPremium && global.db.data.users[m.sender].limit < 3) return m.reply(mess.endLimit) // respon ketika limit habis
                 if (!q) throw (mess.link)
                 m.reply(mess.wait)
                 let url = args.join(' ')
@@ -1451,6 +1452,34 @@ Jika fitur ini error, gunakan ttnowm2
                 await sleep(1000)
                 await bluz.sendMessage(m.chat, { video: { url: hasil.link }}, { quoted: m })}
             }
+            break
+            case 'igdl': case 'ig': case 'instagram': {
+		if (!isPremium && global.db.data.users[m.sender].limit < 3) return m.reply(mess.endLimit) // respon ketika limit habis
+                if (!q) throw (mess.link)
+                m.reply(mess.wait)
+                let url = args.join(' ')
+                let data = await fetchJson(`https://api.lolhuman.xyz/api/instagram?apikey=${lolkey}&url=${url}`)
+                for (var x of data.result) {
+                    if (x.includes('.mp4')) {
+                        bluz.sendMessage(m.chat, { video: { url: x }, mimetype: 'video/mp4' })
+                    } else {
+                        bluz.sendMessage(m.chat, { image: { url: x } })
+                    }
+                }}
+            break
+            case 'igdl2': case 'ig2': case 'instagram2': {
+		if (!isPremium && global.db.data.users[m.sender].limit < 3) return m.reply(mess.endLimit) // respon ketika limit habis
+                if (!q) throw (mess.link)
+                m.reply(mess.wait)
+                let url = args.join(' ')
+                let data = await fetchJson(`https://api.lolhuman.xyz/api/instagram2?apikey=${lolkey}&url=${url}`)
+                for (var x of data.result.media) {
+                    if (x.includes('.mp4')) {
+                        bluz.sendMessage(m.chat, { video: { url: x }, mimetype: 'video/mp4' })
+                    } else {
+                        bluz.sendMessage(m.chat, { image: { url: x } })
+                    }
+                }}
             break
             case 'tiktokmp3': case 'ttmp3': case 'tiktokaudio': {
                     if (!q) throw (mess.link)
@@ -2336,18 +2365,6 @@ Lihat list Pesan Dengan ${prefix}listmsg`)
 		    db.data.users[m.sender].limit -= 1
                 } else {
                     m.reply(`Example : ${prefix +command} type id\n\nList Type :\n1. ff (Free Fire)\n2. ml (Mobile Legends)\n3. aov (Arena Of Valor)\n4. cod (Call Of Duty)\n5. pb (point Blank)\n6. ig (Instagram)\n7. npm (https://npmjs.com)`)
-                }
-            }
-            break
-	        case 'instagram': case 'ig': case 'igdl': {
-                if (!text) throw 'No Query Url!'
-                m.reply(mess.wait)
-                if (/(?:\/p\/|\/reel\/|\/tv\/)([^\s&]+)/.test(isUrl(text)[0])) {
-                    let anu = await fetchJson(api('zenz', '/downloader/instagram2', { url: isUrl(text)[0] }, 'apikey'))
-                    for (let media of anu.data) bluz.sendFileUrl(m.chat, media, `Download Url Instagram From ${isUrl(text)[0]}`, m)
-                } else if (/\/stories\/([^\s&]+)/.test(isUrl(text)[0])) {
-                    let anu = await fetchJson(api('zenz', '/downloader/instastory', { url: isUrl(text)[0] }, 'apikey'))
-                    bluz.sendFileUrl(m.chat, anu.media[0].url, `Download Url Instagram From ${isUrl(text)[0]}`, m)
                 }
             }
             break
