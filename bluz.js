@@ -1328,8 +1328,8 @@ break
             case 'play': case 'ytplay': {
                 if (!isPremium && global.db.data.users[m.sender].limit < 3) return m.reply(mess.endLimit) // respon ketika limit habis
                     if (!text) throw `Example : ${prefix + command} story wa anime`
-                    let yts = require("yt-search")
-                    let search = await yts(text)
+                    //let yts = require("yt-search")
+                    //let search = await yts(text)
                     let anu = search.videos[Math.floor(Math.random() * search.videos.length)]
                     let buttons = [
                         {buttonId: `ytmp3 ${anu.url}`, buttonText: {displayText: '♫ Audio'}, type: 1},
