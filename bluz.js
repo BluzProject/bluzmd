@@ -1378,8 +1378,8 @@ break
                 break
                 case 'yts': case 'ytsearch': {
                     if (!text) throw `Example : ${prefix + command} story wa anime`
-                    let yts = require("yt-search")
-                    let search = await yts(text)
+                    //let yts = require("yt-search")
+                    //let search = await yts(text)
                     let teks = 'YouTube Search\n\n Result From '+text+'\n\n'
                     let no = 1
                     for (let i of search.all) {
